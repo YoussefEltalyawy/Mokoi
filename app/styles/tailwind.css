@@ -4,3 +4,8 @@
  */
 
 @import 'tailwindcss';
+
+
+@theme {
+  --font-coolvetica: 'coolvetica', sans-serif;
+}

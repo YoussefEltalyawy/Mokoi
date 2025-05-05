@@ -96,13 +96,11 @@ aside li {
   left: 0;
   opacity: 0;
   pointer-events: none;
-  position: fixed;
   right: 0;
   top: 0;
   transition: opacity 400ms ease-in-out;
   transition: opacity 400ms;
   visibility: hidden;
-  z-index: 10;
 }
 
 .overlay .close-outside {
@@ -162,9 +160,10 @@ button.reset:hover:not(:has(> *)) {
 * components/Header
 * --------------------------------------------------
 */
-.header {
+/* .header {
   align-items: center;
-  background: #fff;
+  background: #000;
+  color: white;
   display: flex;
   height: var(--header-height);
   padding: 0 1rem;
@@ -199,7 +198,15 @@ button.reset:hover:not(:has(> *)) {
   cursor: pointer;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: auto;
+}
+
 .header-ctas {
+  color:#fff;
   align-items: center;
   display: flex;
   grid-gap: 1rem;
@@ -210,6 +217,17 @@ button.reset:hover:not(:has(> *)) {
   min-width: fit-content;
 }
 
+@media (min-width: 45em) {
+  .desktop-signin {
+    display: inline-block;
+  }
+}
+
+@media (max-width: 45em) {
+  .desktop-signin {
+    display: none;
+  }
+} */
 
 /*
 * --------------------------------------------------
@@ -520,3 +538,5 @@ button.reset:hover:not(:has(> *)) {
 .account-logout {
   display: inline-block;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');

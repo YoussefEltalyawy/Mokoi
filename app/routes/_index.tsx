@@ -9,7 +9,7 @@ import type {
 import {ProductItem} from '~/components/ProductItem';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'MOKOI | Home'}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -60,7 +60,7 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
+      {/* <FeaturedCollection collection={data.featuredCollection} /> */}
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );

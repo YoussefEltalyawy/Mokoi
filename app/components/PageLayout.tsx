@@ -1,4 +1,4 @@
-import {Await, Link} from '@remix-run/react';
+import {Await, Link, NavLink} from '@remix-run/react';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
@@ -36,7 +36,11 @@ export function PageLayout({
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <MobileMenuAside
+        header={header}
+        publicStoreDomain={publicStoreDomain}
+        isLoggedIn={isLoggedIn}
+      />
       {header && (
         <Header
           header={header}
@@ -154,9 +158,11 @@ function SearchAside() {
 function MobileMenuAside({
   header,
   publicStoreDomain,
+  isLoggedIn,
 }: {
   header: PageLayoutProps['header'];
   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
+  isLoggedIn: PageLayoutProps['isLoggedIn'];
 }) {
   return (
     header.menu &&
@@ -168,6 +174,17 @@ function MobileMenuAside({
           primaryDomainUrl={header.shop.primaryDomain.url}
           publicStoreDomain={publicStoreDomain}
         />
+        <NavLink
+          prefetch="intent"
+          to="/account"
+          style={{marginTop: '1rem', fontWeight: 600}}
+        >
+          <Suspense fallback="Sign in">
+            <Await resolve={isLoggedIn} errorElement="Sign in">
+              {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+            </Await>
+          </Suspense>
+        </NavLink>
       </Aside>
     )
   );
