@@ -7,6 +7,7 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
+import {HeroSection} from '~/components/HeroSection';
 
 export const meta: MetaFunction = () => {
   return [{title: 'MOKOI | Home'}];
@@ -60,7 +61,8 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="home">
-      {/* <FeaturedCollection collection={data.featuredCollection} /> */}
+      {/* Use our new HeroSection component */}
+      <HeroSection />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );

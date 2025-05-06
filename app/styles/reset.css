@@ -23,13 +23,7 @@ p {
   padding: 0;
 }
 
-h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  line-height: 1.4;
-  margin-bottom: 2rem;
-  margin-top: 2rem;
-}
+
 
 h2 {
   font-size: 1.2rem;
@@ -58,10 +52,7 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
+
 
 hr {
   border-bottom: none;

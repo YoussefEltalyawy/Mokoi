@@ -1,10 +1,10 @@
-import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from '@remix-run/react';
+import {Suspense, useEffect, useState} from 'react';
+import {Await, NavLink, useAsyncValue, useLocation} from '@remix-run/react';
 import {Image, useOptimisticCart} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {GiHamburgerMenu} from 'react-icons/gi';
-import { Menu } from 'lucide-react';
+import {Menu} from 'lucide-react';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -20,19 +20,46 @@ export function Header({
   publicStoreDomain,
 }: HeaderProps) {
   const {menu} = header;
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setHasScrolled(scrollPosition > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Initialize scroll position check
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Determine background color:
+  // - If not home page: always black
+  // - If home page: transparent when not scrolled, black when scrolled
+  const shouldBeTransparent = isHomePage && !hasScrolled;
+
   return (
-    <header className="flex items-center justify-between p-4 bg-black text-white sticky top-0 z-10 h-16">
-      <div className="flex items-center">
+    <header
+      className={`flex items-center justify-between text-white fixed top-0 left-0 w-screen z-20 h-16 transition-colors duration-300 ${shouldBeTransparent ? 'bg-transparent' : 'bg-black'}`}
+    >
+      <div
+        className={`flex items-center ${shouldBeTransparent ? '' : ''} rounded-lg px-4 py-2`}
+      >
         <HeaderMenuMobileToggle />
         <NavLink prefetch="intent" to="/" end>
-          <Image
-            src="/mokoi-text-logo.png"
-            className="h-4 w-4"
-            alt="Logo"
-          />
+          <Image src="/mokoi-text-logo.png" className="h-4 w-4" alt="Logo" />
         </NavLink>
       </div>
-      <div className="flex items-center gap-4">
+      <div
+        className={`flex items-center gap-4 ${shouldBeTransparent ? 'bg-black/20' : ''} rounded-lg px-4 py-2`}
+      >
         <SearchToggle />
         <CartToggle cart={cart} />
       </div>
