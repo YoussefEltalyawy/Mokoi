@@ -8,6 +8,7 @@ import type {
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 import {HeroSection} from '~/components/HeroSection';
+import {FeaturedCollections} from '~/components/FeaturedCollections';
 
 export const meta: MetaFunction = () => {
   return [{title: 'MOKOI | Home'}];
@@ -44,15 +45,24 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
+  // Fetch featured collections with products
+  const featuredCollections = context.storefront
+    .query(FEATURED_COLLECTIONS_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  // Keep the recommended products query for fallback
   const recommendedProducts = context.storefront
     .query(RECOMMENDED_PRODUCTS_QUERY)
     .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
       console.error(error);
       return null;
     });
 
   return {
+    featuredCollections,
     recommendedProducts,
   };
 }
@@ -61,9 +71,32 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="home">
-      {/* Use our new HeroSection component */}
+      {/* Hero Section */}
       <HeroSection />
-      <RecommendedProducts products={data.recommendedProducts} />
+
+      {/* Featured Collections (replacing Recommended Products) */}
+      <Suspense
+        fallback={
+          <div className="my-16 px-4 text-center">Loading collections...</div>
+        }
+      >
+        <Await resolve={data.featuredCollections}>
+          {(response: any) => {
+            if (!response?.collections?.nodes?.length) {
+              // Fallback to RecommendedProducts if collections aren't available
+              return (
+                <RecommendedProducts products={data.recommendedProducts} />
+              );
+            }
+
+            return (
+              <FeaturedCollections
+                collections={response.collections.nodes as any}
+              />
+            );
+          }}
+        </Await>
+      </Suspense>
     </div>
   );
 }
@@ -134,6 +167,41 @@ const FEATURED_COLLECTION_QUERY = `#graphql
     collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...FeaturedCollection
+      }
+    }
+  }
+` as const;
+
+const FEATURED_COLLECTIONS_QUERY = `#graphql
+  fragment FeaturedCollectionWithProducts on Collection {
+    id
+    title
+    handle
+    products(first: 4) {
+      nodes {
+        id
+        title
+        handle
+        featuredImage {
+          url
+          altText
+          width
+          height
+        }
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
+  }
+  query FeaturedCollections($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 2, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...FeaturedCollectionWithProducts
       }
     }
   }

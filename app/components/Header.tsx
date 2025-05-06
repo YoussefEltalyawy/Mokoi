@@ -19,7 +19,6 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {menu} = header;
   const [hasScrolled, setHasScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === '/';
@@ -46,24 +45,41 @@ export function Header({
   const shouldBeTransparent = isHomePage && !hasScrolled;
 
   return (
-    <header
-      className={`flex items-center justify-between text-white fixed top-0 left-0 w-screen z-20 h-16 transition-colors duration-300 ${shouldBeTransparent ? 'bg-transparent' : 'bg-black'}`}
-    >
+    <div className="fixed top-0 left-0 w-screen z-20">
+      {/* Announcement Bar */}
       <div
-        className={`flex items-center ${shouldBeTransparent ? '' : ''} rounded-lg px-4 py-2`}
+        className={`w-full bg-[#6E08CE] text-black transition-all duration-500 ease-in-out ${hasScrolled ? 'h-0 overflow-hidden' : 'h-8'}`}
       >
-        <HeaderMenuMobileToggle />
-        <NavLink prefetch="intent" to="/" end>
-          <Image src="/mokoi-text-logo.png" className="h-4 w-4" alt="Logo" />
-        </NavLink>
+        <div className="marquee-container">
+          <p className="text-sm font-semibold animate-marquee">
+            Free shipping for orders above 1500 EGP - IN MOKO WE TRUST&quot;
+            &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for orders above 1500 EGP -
+            IN MOKO WE TRUST&quot; &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for
+            orders above 1500 EGP - IN MOKO WE TRUST&quot;
+            &nbsp;&nbsp;&nbsp;&nbsp;
+          </p>
+        </div>
       </div>
-      <div
-        className={`flex items-center gap-4 ${shouldBeTransparent ? 'bg-black/20' : ''} rounded-lg px-4 py-2`}
+
+      <header
+        className={`flex items-center justify-between text-white w-full transition-colors duration-300 ${shouldBeTransparent ? 'bg-transparent' : 'bg-black'} h-16`}
       >
-        <SearchToggle />
-        <CartToggle cart={cart} />
-      </div>
-    </header>
+        <div
+          className={`flex items-center ${shouldBeTransparent ? '' : ''} rounded-lg px-4 py-2`}
+        >
+          <HeaderMenuMobileToggle />
+          <NavLink prefetch="intent" to="/" end>
+            <Image src="/mokoi-text-logo.png" className="h-4 w-4" alt="Logo" />
+          </NavLink>
+        </div>
+        <div
+          className={`flex items-center gap-4 ${shouldBeTransparent ? 'bg-black/20' : ''} rounded-lg px-4 py-2`}
+        >
+          <SearchToggle />
+          <CartToggle cart={cart} />
+        </div>
+      </header>
+    </div>
   );
 }
 
