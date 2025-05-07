@@ -18,6 +18,7 @@ import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import marqueeStyles from '~/styles/marquee.css?url';
 import {PageLayout} from './components/PageLayout';
+import ProjectStatusChecker from './components/ProjectAdminStatus';
 
 export type RootLoader = typeof loader;
 
@@ -160,6 +161,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <Links />
       </head>
       <body>
+        <ProjectStatusChecker />
         {data ? (
           <Analytics.Provider
             cart={data.cart}

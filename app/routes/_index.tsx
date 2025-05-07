@@ -9,6 +9,7 @@ import type {
 import {ProductItem} from '~/components/ProductItem';
 import {HeroSection} from '~/components/HeroSection';
 import {FeaturedCollections} from '~/components/FeaturedCollections';
+import {NewArrivals} from '~/components/NewArrivals';
 
 export const meta: MetaFunction = () => {
   return [{title: 'MOKOI | Home'}];
@@ -61,9 +62,18 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
       return null;
     });
 
+  // Fetch new arrivals (recently created products)
+  const newArrivalsProducts = context.storefront
+    .query(NEW_ARRIVALS_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
   return {
     featuredCollections,
     recommendedProducts,
+    newArrivalsProducts,
   };
 }
 
@@ -94,6 +104,23 @@ export default function Homepage() {
                 collections={response.collections.nodes as any}
               />
             );
+          }}
+        </Await>
+      </Suspense>
+
+      {/* New Arrivals Section */}
+      <Suspense
+        fallback={
+          <div className="my-16 px-4 text-center">Loading new arrivals...</div>
+        }
+      >
+        <Await resolve={data.newArrivalsProducts}>
+          {(response: any) => {
+            if (!response?.products?.nodes?.length) {
+              return null;
+            }
+
+            return <NewArrivals products={response.products.nodes} />;
           }}
         </Await>
       </Suspense>
@@ -231,6 +258,36 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     products(first: 4, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
+      }
+    }
+  }
+` as const;
+
+const NEW_ARRIVALS_QUERY = `#graphql
+  fragment NewArrivalsProduct on Product {
+    id
+    title
+    handle
+    createdAt
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+  query NewArrivalsProducts($country: CountryCode, $language: LanguageCode, $first: Int = 4)
+    @inContext(country: $country, language: $language) {
+    products(first: $first, sortKey: CREATED_AT, reverse: true) {
+      nodes {
+        ...NewArrivalsProduct
       }
     }
   }

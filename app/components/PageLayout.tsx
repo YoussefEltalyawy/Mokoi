@@ -24,7 +24,7 @@ interface PageLayoutProps {
   children?: React.ReactNode;
 }
 
-export function PageLayout({
+export function   PageLayout({
   cart,
   children = null,
   footer,

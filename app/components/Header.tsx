@@ -24,8 +24,7 @@ export function Header({
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
+    const handleScroll = () => {      const scrollPosition = window.scrollY;
       setHasScrolled(scrollPosition > 0);
     };
 
@@ -48,7 +47,7 @@ export function Header({
     <div className="fixed top-0 left-0 w-screen z-20">
       {/* Announcement Bar */}
       <div
-        className={`w-full bg-[#6E08CE] text-black transition-all duration-500 ease-in-out ${hasScrolled ? 'h-0 overflow-hidden' : 'h-8'}`}
+        className={`w-full bg-[#7604e1] text-black transition-all duration-500 ease-in-out ${hasScrolled ? 'h-0 overflow-hidden' : 'h-10'}`}
       >
         <div className="marquee-container">
           <p className="text-sm font-semibold animate-marquee">

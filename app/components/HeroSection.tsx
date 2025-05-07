@@ -57,9 +57,7 @@ export function HeroSection() {
               IN
             </TextScramble>
 
-            <span className="uppercase drop-shadow-lg italic">
-              MOKOI
-            </span>
+            <span className="uppercase drop-shadow-lg italic">MOKOI</span>
 
             <TextScramble
               className="mr-3 ml-3 uppercase drop-shadow-lg"
@@ -85,7 +83,7 @@ export function HeroSection() {
           {/* Simplified CTA Button - Smaller size */}
           <Link
             to="/collections/all"
-            className="inline-flex items-center px-6 py-2 text-sm md:text-base font-bold text-white bg-[#6E08CE] hover:bg-[#5a07a7] transition-colors duration-300 uppercase tracking-wider rounded-lg mt-2 md:mt-0"
+            className="inline-flex items-center px-6 py-2 text-sm md:text-base font-bold text-white bg-[#7604e1] hover:bg-[#5a07a7] transition-colors duration-300 uppercase tracking-wider rounded-lg mt-2 md:mt-0"
           >
             Shop Now
             <svg

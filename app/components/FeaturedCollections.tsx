@@ -116,7 +116,7 @@ export function FeaturedCollections({
       </h2>
 
       {/* Categories */}
-      <div className="flex gap-4 -mt-4 mb-4">
+      <div className="flex gap-4 mb-4">
         <h3 className="text-md text-black/90">
           <TextScramble trigger={isVisible} speed={0.4} duration={1.5}>
             Best Sellers
@@ -132,14 +132,14 @@ export function FeaturedCollections({
             onClick={() => setActiveTab(i)}
             className={`relative pb-2 text-sm uppercase ${
               i === activeTab
-                ? 'font-bold text-[#6E08CE]'
+                ? 'font-bold text-[#7604e1]'
                 : 'font-medium text-gray-500'
             } transition-colors`}
           >
             {col.title}
             {i === activeTab && (
               <motion.div
-                className="absolute bottom-0 left-0 w-full h-0.5 bg-[#6E08CE]"
+                className="absolute bottom-0 left-0 w-full h-0.5 bg-[#7604e1]"
                 layoutId="activeTab"
                 transition={{
                   type: 'spring',
@@ -193,7 +193,7 @@ export function FeaturedCollections({
                 </div>
                 <div className="mt-1">
                   <h3 className="text-sm font-medium uppercase">{p.title}</h3>
-                  <div className="text-sm mt-1 text-[#6E08CE] font-medium">
+                  <div className="text-sm mt-1 text-[#7604e1] font-medium">
                     <Money
                       data={{
                         amount: p.priceRange.minVariantPrice.amount,
