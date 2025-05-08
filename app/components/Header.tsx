@@ -24,7 +24,8 @@ export function Header({
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => {      const scrollPosition = window.scrollY;
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
       setHasScrolled(scrollPosition > 0);
     };
 
@@ -38,16 +39,11 @@ export function Header({
     };
   }, []);
 
-  // Determine background color:
-  // - If not home page: always black
-  // - If home page: transparent when not scrolled, black when scrolled
-  const shouldBeTransparent = isHomePage && !hasScrolled;
-
   return (
     <div className="fixed top-0 left-0 w-screen z-20">
       {/* Announcement Bar */}
       <div
-        className={`w-full bg-[#7604e1] text-black transition-all duration-500 ease-in-out ${hasScrolled ? 'h-0 overflow-hidden' : 'h-10'}`}
+        className={`w-full bg-black text-white transition-all duration-500 ease-in-out ${hasScrolled ? 'h-0 overflow-hidden' : 'h-10'}`}
       >
         <div className="marquee-container">
           <p className="text-sm font-semibold animate-marquee">
@@ -60,20 +56,18 @@ export function Header({
         </div>
       </div>
 
-      <header
-        className={`flex items-center justify-between text-white w-full transition-colors duration-300 ${shouldBeTransparent ? 'bg-transparent' : 'bg-black'} h-16`}
-      >
-        <div
-          className={`flex items-center ${shouldBeTransparent ? '' : ''} rounded-lg px-4 py-2`}
-        >
+      <header className="flex items-center justify-between bg-white text-black w-full transition-colors duration-300 h-16">
+        <div className="flex items-center rounded-lg px-4 py-2">
           <HeaderMenuMobileToggle />
           <NavLink prefetch="intent" to="/" end>
-            <Image src="/mokoi-text-logo.png" className="h-4 w-4" alt="Logo" />
+            <Image
+              src="/mokoi-text-logo-black.png"
+              className="h-4 w-4"
+              alt="Logo"
+            />
           </NavLink>
         </div>
-        <div
-          className={`flex items-center gap-4 ${shouldBeTransparent ? 'bg-black/20' : ''} rounded-lg px-4 py-2`}
-        >
+        <div className="flex items-center gap-4 rounded-lg px-4 py-2">
           <SearchToggle />
           <CartToggle cart={cart} />
         </div>
@@ -85,7 +79,7 @@ export function Header({
 function HeaderMenuMobileToggle() {
   const {open} = useAside();
   return (
-    <button className="mr-2 text-white" onClick={() => open('mobile')}>
+    <button className="mr-2 text-black" onClick={() => open('mobile')}>
       {/* <GiHamburgerMenu className="h-6 w-6" /> */}
       <Menu className="w-5 h-5 lg:w-7 lg:h-7" />
     </button>
@@ -95,7 +89,7 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="text-white font-semibold" onClick={() => open('search')}>
+    <button className="text-black font-semibold" onClick={() => open('search')}>
       SEARCH
     </button>
   );
@@ -114,7 +108,7 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
 function CartBadge({count}: {count: number | null}) {
   const {open} = useAside();
   return (
-    <button className="text-white font-semibold" onClick={() => open('cart')}>
+    <button className="text-black font-semibold" onClick={() => open('cart')}>
       CART ({count === null ? 0 : count})
     </button>
   );

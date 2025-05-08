@@ -83,7 +83,7 @@ export function HeroSection() {
           {/* Simplified CTA Button - Smaller size */}
           <Link
             to="/collections/all"
-            className="inline-flex items-center px-6 py-2 text-sm md:text-base font-bold text-white bg-[#7604e1] hover:bg-[#5a07a7] transition-colors duration-300 uppercase tracking-wider rounded-lg mt-2 md:mt-0"
+            className="inline-flex items-center px-6 py-2 text-sm md:text-base font-bold bg-white hover:bg-white/80 transition-colors duration-300 uppercase tracking-wider rounded-lg mt-2 md:mt-0"
           >
             Shop Now
             <svg
