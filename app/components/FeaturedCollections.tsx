@@ -197,7 +197,7 @@ export function FeaturedCollections({
       </div>
 
       <div className="relative">
-        <div className="md:hidden flex absolute top-1/2 -translate-y-1/2 left-0 right-0 z-10 px-2 pointer-events-none">
+        <div className="md:hidden flex absolute top-1/2 -translate-y-1/2 left-0 right-0 z-20 px-2 pointer-events-none">
           <div className="flex-1">
             {canScrollLeft && (
               <motion.button
