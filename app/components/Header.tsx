@@ -62,7 +62,7 @@ export function Header({
           <NavLink prefetch="intent" to="/" end>
             <Image
               src="/mokoi-text-logo-black.png"
-              className="h-4 w-4"
+              className="h-3"
               alt="Logo"
             />
           </NavLink>

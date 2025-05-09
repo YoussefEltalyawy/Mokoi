@@ -3,6 +3,7 @@
 import {useState, useEffect} from 'react';
 import {Link} from '@remix-run/react';
 import {TextScramble} from '~/components/ui/text-scramble';
+import {Image} from '@shopify/hydrogen';
 
 export function HeroSection() {
   const [triggerWe, setTriggerWe] = useState(true);
@@ -33,7 +34,7 @@ export function HeroSection() {
   return (
     <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Hero Image */}
-      <img
+      <Image
         src="/mokoi-hero.webp"
         alt="Hero background"
         className="w-screen h-full object-cover block absolute inset-0 z-0"

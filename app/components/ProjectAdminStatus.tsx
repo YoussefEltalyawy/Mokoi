@@ -15,7 +15,6 @@ async function getProjectStatus(): Promise<ProjectStatus | null> {
       return null;
     }
     const data = (await response.json()) as ProjectStatus;
-    console.warn('Client-side fetched project data:', data);
     return data;
   } catch (error) {
     console.error('Error fetching project status client-side:', error);

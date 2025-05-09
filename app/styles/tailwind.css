@@ -16,21 +16,4 @@
   }
 }
 
-/* Improved marquee animation for the collections showcase */
-@layer utilities {
-  .animate-marquee {
-    display: inline-block;
-    white-space: nowrap;
-    animation: marquee 30s linear infinite;
-    padding-left: 100%;
-  }
-
-  @keyframes marquee {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
-  }
-}
+/* Marquee animation is now defined in marquee.css */
