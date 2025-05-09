@@ -9,7 +9,7 @@ import type {
 import {ProductItem} from '~/components/ProductItem';
 import {HeroSection} from '~/components/HeroSection';
 import {FeaturedCollections} from '~/components/FeaturedCollections';
-import {NewArrivals} from '~/components/NewArrivals';
+import {CollectionsShowcase} from '~/components/CollectionsShowcase';
 
 export const meta: MetaFunction = () => {
   return [{title: 'MOKOI | Home'}];
@@ -45,136 +45,6 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
-  // Fetch featured collections with products
-  const featuredCollections = context.storefront
-    .query(FEATURED_COLLECTIONS_QUERY)
-    .catch((error) => {
-      console.error(error);
-      return null;
-    });
-
-  // Keep the recommended products query for fallback
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error) => {
-      console.error(error);
-      return null;
-    });
-
-  // Fetch new arrivals (recently created products)
-  const newArrivalsProducts = context.storefront
-    .query(NEW_ARRIVALS_QUERY)
-    .catch((error) => {
-      console.error(error);
-      return null;
-    });
-
-  return {
-    featuredCollections,
-    recommendedProducts,
-    newArrivalsProducts,
-  };
-}
-
-export default function Homepage() {
-  const data = useLoaderData<typeof loader>();
-  return (
-    <div className="home">
-      {/* Hero Section */}
-      <HeroSection />
-
-      {/* Featured Collections (replacing Recommended Products) */}
-      <Suspense
-        fallback={
-          <div className="my-16 px-4 text-center">Loading collections...</div>
-        }
-      >
-        <Await resolve={data.featuredCollections}>
-          {(response: any) => {
-            if (!response?.collections?.nodes?.length) {
-              // Fallback to RecommendedProducts if collections aren't available
-              return (
-                <RecommendedProducts products={data.recommendedProducts} />
-              );
-            }
-
-            return (
-              <FeaturedCollections
-                collections={response.collections.nodes as any}
-              />
-            );
-          }}
-        </Await>
-      </Suspense>
-
-      {/* New Arrivals Section */}
-      <Suspense
-        fallback={
-          <div className="my-16 px-4 text-center">Loading new arrivals...</div>
-        }
-      >
-        <Await resolve={data.newArrivalsProducts}>
-          {(response: any) => {
-            if (!response?.products?.nodes?.length) {
-              return null;
-            }
-
-            return <NewArrivals products={response.products.nodes} />;
-          }}
-        </Await>
-      </Suspense>
-    </div>
-  );
-}
-
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
-}
-
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
-  );
-}
 
 const FEATURED_COLLECTION_QUERY = `#graphql
   fragment FeaturedCollection on Collection {
@@ -204,7 +74,7 @@ const FEATURED_COLLECTIONS_QUERY = `#graphql
     id
     title
     handle
-    products(first: 4) {
+    products(first: 4, sortKey: BEST_SELLING) {
       nodes {
         id
         title
@@ -292,3 +162,209 @@ const NEW_ARRIVALS_QUERY = `#graphql
     }
   }
 ` as const;
+
+const COLLECTIONS_WITH_IMAGES_QUERY = `#graphql
+  fragment CollectionWithImage on Collection {
+    id
+    title
+    handle
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+    updatedAt
+  }
+  query CollectionsWithImages($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 10, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...CollectionWithImage
+      }
+    }
+  }
+` as const;
+
+// Define a type for the collection with image and updatedAt
+type CollectionWithImage = {
+  id: string;
+  title: string;
+  handle: string;
+  image?: {
+    id: string;
+    url: string;
+    altText?: string;
+    width?: number;
+    height?: number;
+  };
+  updatedAt: string;
+};
+
+function loadDeferredData({context}: LoaderFunctionArgs) {
+  // Fetch featured collections with products
+  const featuredCollections = context.storefront
+    .query(FEATURED_COLLECTIONS_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  // Keep the recommended products query for fallback
+  const recommendedProducts = context.storefront
+    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  // Fetch new arrivals (recently created products)
+  const newArrivalsProducts = context.storefront
+    .query(NEW_ARRIVALS_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  // Fetch collections with images for the secondary showcase
+  const collectionsWithImages = context.storefront
+    .query(COLLECTIONS_WITH_IMAGES_QUERY)
+    .then((response) => {
+      // Filter to only include collections with images and sort by updatedAt
+      if (response?.collections?.nodes) {
+        const filtered = response.collections.nodes
+          .filter((collection: CollectionWithImage) => collection.image?.url)
+          .sort((a: CollectionWithImage, b: CollectionWithImage) => {
+            // Sort by updatedAt, newest first
+            return (
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            );
+          })
+          .slice(0, 2); // Take only the two newest
+
+        return {
+          collections: {
+            nodes: filtered,
+          },
+        };
+      }
+      return response;
+    })
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  return {
+    featuredCollections,
+    recommendedProducts,
+    newArrivalsProducts,
+    collectionsWithImages,
+  };
+}
+
+export default function Homepage() {
+  const data = useLoaderData<typeof loader>();
+  return (
+    <div className="home">
+      {/* Hero Section */}
+      <HeroSection />
+
+      {/* Featured Collections (replacing Recommended Products) */}
+      <Suspense
+        fallback={
+          <div className="my-16 px-4 text-center">Loading collections...</div>
+        }
+      >
+        <Await resolve={data.featuredCollections}>
+          {(response: any) => {
+            if (!response?.collections?.nodes?.length) {
+              // Fallback to RecommendedProducts if collections aren't available
+              return (
+                <RecommendedProducts products={data.recommendedProducts} />
+              );
+            }
+
+            return (
+              <FeaturedCollections
+                collections={response.collections.nodes as any}
+              />
+            );
+          }}
+        </Await>
+      </Suspense>
+
+      {/* Collections Showcase - 50/50 split section */}
+      <Suspense
+        fallback={
+          <div className="my-8 text-center">
+            Loading collections showcase...
+          </div>
+        }
+      >
+        <Await resolve={data.collectionsWithImages}>
+          {(response: any) => {
+            if (!response?.collections?.nodes?.length) {
+              return null;
+            }
+
+            return (
+              <div className="w-full overflow-hidden">
+                <CollectionsShowcase collections={response.collections.nodes} />
+              </div>
+            );
+          }}
+        </Await>
+      </Suspense>
+    </div>
+  );
+}
+
+function FeaturedCollection({
+  collection,
+}: {
+  collection: FeaturedCollectionFragment;
+}) {
+  if (!collection) return null;
+  const image = collection?.image;
+  return (
+    <Link
+      className="featured-collection"
+      to={`/collections/${collection.handle}`}
+    >
+      {image && (
+        <div className="featured-collection-image">
+          <Image data={image} sizes="100vw" />
+        </div>
+      )}
+      <h1>{collection.title}</h1>
+    </Link>
+  );
+}
+
+function RecommendedProducts({
+  products,
+}: {
+  products: Promise<RecommendedProductsQuery | null>;
+}) {
+  return (
+    <div className="recommended-products">
+      <h2>Recommended Products</h2>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Await resolve={products}>
+          {(response) => (
+            <div className="recommended-products-grid">
+              {response
+                ? response.products.nodes.map((product) => (
+                    <ProductItem key={product.id} product={product} />
+                  ))
+                : null}
+            </div>
+          )}
+        </Await>
+      </Suspense>
+      <br />
+    </div>
+  );
+}

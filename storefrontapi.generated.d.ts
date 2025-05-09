@@ -1302,7 +1302,7 @@ interface GeneratedQueryTypes {
     return: RecommendedProductsQuery;
     variables: RecommendedProductsQueryVariables;
   };
-  '#graphql\n  fragment NewArrivalsProduct on Product {\n    id\n    title\n    handle\n    createdAt\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query NewArrivalsProducts($country: CountryCode, $language: LanguageCode, $first: Int = 8)\n    @inContext(country: $country, language: $language) {\n    products(first: $first, sortKey: CREATED_AT, reverse: true) {\n      nodes {\n        ...NewArrivalsProduct\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment NewArrivalsProduct on Product {\n    id\n    title\n    handle\n    createdAt\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query NewArrivalsProducts($country: CountryCode, $language: LanguageCode, $first: Int = 4)\n    @inContext(country: $country, language: $language) {\n    products(first: $first, sortKey: CREATED_AT, reverse: true) {\n      nodes {\n        ...NewArrivalsProduct\n      }\n    }\n  }\n': {
     return: NewArrivalsProductsQuery;
     variables: NewArrivalsProductsQueryVariables;
   };

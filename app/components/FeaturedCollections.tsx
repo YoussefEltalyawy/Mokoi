@@ -70,65 +70,77 @@ export function FeaturedCollections({
     }
   };
 
-  // Check scroll position
+  // Check scroll position to determine arrow visibility
   const checkScrollPosition = () => {
     if (!scrollRef.current) return;
-
     const {scrollLeft, scrollWidth, clientWidth} = scrollRef.current;
     setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10); // 10px buffer
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
   };
 
-  // Set up intersection observer to detect when section is visible
+  // Call checkScrollPosition on component mount
+  useEffect(() => {
+    checkScrollPosition();
+  }, []);
+
+  // Call checkScrollPosition when active tab changes
+  useEffect(() => {
+    checkScrollPosition();
+  }, [activeTab]);
+
+  // Intersection observer for section visibility
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
+      ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.disconnect(); // Only need to trigger once
+          observer.disconnect();
         }
       },
-      {threshold: 0.1}, // Trigger when 10% of the element is visible
+      {threshold: 0.1},
     );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
   }, []);
 
-  // Handle mouse events
+  // Global mouseup event listener
   useEffect(() => {
     window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
+    return () => window.removeEventListener('mouseup', handleMouseUp);
   }, []);
 
-  // Check scroll position on mount and when scrolling
+  // Scroll event listener
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (scrollContainer) {
-      checkScrollPosition();
       scrollContainer.addEventListener('scroll', checkScrollPosition);
       return () =>
         scrollContainer.removeEventListener('scroll', checkScrollPosition);
     }
-  }, [activeTab]); // Re-check when tab changes
+  }, [activeTab]);
+
+  // Window resize event listener
+  useEffect(() => {
+    const handleResize = () => checkScrollPosition();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Scroll functions
   const handleScrollLeft = () => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({left: -300, behavior: 'smooth'});
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({left: -300, behavior: 'smooth'});
+      // Check position after animation completes
+      setTimeout(checkScrollPosition, 500);
+    }
   };
 
   const handleScrollRight = () => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({left: 300, behavior: 'smooth'});
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({left: 300, behavior: 'smooth'});
+      // Check position after animation completes
+      setTimeout(checkScrollPosition, 500);
+    }
   };
 
   if (!collections?.length) return null;
@@ -136,20 +148,18 @@ export function FeaturedCollections({
 
   return (
     <motion.div
-      className="my-8 px-4"
+      className="mt-8 px-8"
       ref={sectionRef}
       initial={{opacity: 0}}
       animate={{opacity: isVisible ? 1 : 0}}
       transition={{duration: 0.8}}
     >
-      {/* Header */}
       <h2 className="uppercase text-2xl font-bold tracking-tight">
         <TextScramble trigger={isVisible} speed={0.4} duration={1.8}>
           COLLECTIONS
         </TextScramble>
       </h2>
 
-      {/* Categories */}
       <div className="flex gap-4 mb-4">
         <h3 className="text-md text-black/90">
           <TextScramble trigger={isVisible} speed={0.4} duration={1.5}>
@@ -158,7 +168,6 @@ export function FeaturedCollections({
         </h3>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-4 mt-2 mb-6 border-b border-gray-200">
         {collections.map((col, i) => (
           <button
@@ -187,15 +196,12 @@ export function FeaturedCollections({
         ))}
       </div>
 
-      {/* Products */}
       <div className="relative">
-        {/* Scroll indicators/buttons - only visible on mobile/tablet */}
         <div className="md:hidden flex absolute top-1/2 -translate-y-1/2 left-0 right-0 z-10 px-2 pointer-events-none">
-          {/* Left arrow container */}
           <div className="flex-1">
             {canScrollLeft && (
               <motion.button
-                onClick={() => handleScrollLeft()}
+                onClick={handleScrollLeft}
                 className="w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow-md pointer-events-auto"
                 initial={{opacity: 0, x: -10}}
                 animate={{opacity: 1, x: 0}}
@@ -220,12 +226,10 @@ export function FeaturedCollections({
               </motion.button>
             )}
           </div>
-
-          {/* Right arrow container */}
           <div className="flex-1 flex justify-end">
             {canScrollRight && (
               <motion.button
-                onClick={() => handleScrollRight()}
+                onClick={handleScrollRight}
                 className="w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow-md pointer-events-auto"
                 initial={{opacity: 0, x: 10}}
                 animate={{opacity: 1, x: 0}}
@@ -254,11 +258,12 @@ export function FeaturedCollections({
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={active.id}
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
             transition={{duration: 0.4}}
+            onAnimationComplete={checkScrollPosition}
             ref={scrollRef}
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-6 scroll-smooth"
             aria-label="Product gallery"
@@ -279,9 +284,7 @@ export function FeaturedCollections({
                 <Link to={`/products/${p.handle}`} className="block group">
                   <div className="aspect-[3/4] overflow-hidden mb-2 relative">
                     <motion.div
-                      animate={{
-                        scale: hoveredProduct === p.id ? 1.05 : 1,
-                      }}
+                      animate={{scale: hoveredProduct === p.id ? 1.05 : 1}}
                       transition={{duration: 0.5}}
                       className="h-full w-full"
                     >
@@ -292,8 +295,6 @@ export function FeaturedCollections({
                         className="w-full h-full object-cover"
                       />
                     </motion.div>
-
-                    {/* Gradient overlay on hover */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 flex items-end justify-center pb-6"
                       initial={{opacity: 0}}
@@ -336,8 +337,6 @@ export function FeaturedCollections({
                         />
                       </div>
                     </div>
-
-                    {/* Animated underline on hover */}
                     <motion.div
                       className="absolute -bottom-1 left-0 h-0.5 bg-black w-0 origin-left"
                       initial={{width: 0}}
@@ -350,24 +349,6 @@ export function FeaturedCollections({
             ))}
           </motion.div>
         </AnimatePresence>
-
-        {/* Scroll indicator for desktop - visual cue only */}
-        <div className="hidden md:flex mt-4 justify-center space-x-1">
-          <span className="text-xs text-gray-500">Scroll to see more</span>
-          <svg
-            className="w-4 h-4 animate-bounce"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 8l4 4m0 0l-4 4m4-4H3"
-            />
-          </svg>
-        </div>
       </div>
     </motion.div>
   );
