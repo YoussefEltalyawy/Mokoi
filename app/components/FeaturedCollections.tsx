@@ -280,8 +280,9 @@ export function FeaturedCollections({
                 transition={{duration: 0.6}}
                 onHoverStart={() => setHoveredProduct(p.id)}
                 onHoverEnd={() => setHoveredProduct(null)}
+                onTouchStart={() => setHoveredProduct(p.id)}
               >
-                <Link to={`/products/${p.handle}`} className="block group">
+                <div className="block group">
                   <div className="aspect-[3/4] overflow-hidden mb-2 relative">
                     <motion.div
                       animate={{scale: hoveredProduct === p.id ? 1.05 : 1}}
@@ -344,7 +345,12 @@ export function FeaturedCollections({
                       transition={{duration: 0.3}}
                     />
                   </div>
-                </Link>
+                  <Link
+                    to={`/products/${p.handle}`}
+                    className="absolute inset-0 z-10"
+                    aria-label={`View ${p.title} product`}
+                  />
+                </div>
               </motion.div>
             ))}
           </motion.div>
