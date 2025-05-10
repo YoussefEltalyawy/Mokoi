@@ -179,7 +179,7 @@ const COLLECTIONS_WITH_IMAGES_QUERY = `#graphql
   }
   query CollectionsWithImages($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 10, sortKey: UPDATED_AT, reverse: true) {
+    collections(first: 30, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...CollectionWithImage
       }
@@ -240,8 +240,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
             return (
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
             );
-          })
-          .slice(0, 2); // Take only the two newest
+            });
 
         return {
           collections: {
@@ -279,13 +278,6 @@ export default function Homepage() {
       >
         <Await resolve={data.featuredCollections}>
           {(response: any) => {
-            if (!response?.collections?.nodes?.length) {
-              // Fallback to RecommendedProducts if collections aren't available
-              return (
-                <RecommendedProducts products={data.recommendedProducts} />
-              );
-            }
-
             return (
               <FeaturedCollections
                 collections={response.collections.nodes as any}
@@ -321,50 +313,3 @@ export default function Homepage() {
   );
 }
 
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
-}
-
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
-  );
-}

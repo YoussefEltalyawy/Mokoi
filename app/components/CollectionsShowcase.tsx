@@ -24,8 +24,8 @@ export function CollectionsShowcase({
 }: {
   collections: Collection[];
 }) {
-  // If we don't have at least two collections with images, don't render the component
-  if (collections.length < 2) return null;
+  // If there are no collections, don't render the component
+  if (!collections || collections.length === 0) return null;
 
   return (
     <div className="w-full mt-10 mb-8 mx-0">
@@ -36,7 +36,7 @@ export function CollectionsShowcase({
             .fill(0)
             .map((_, i) => (
               <span key={i} className="text-white uppercase font-bold mx-2">
-                New Collections
+                SHOP BY COLLECTION
                 <span className="mx-2 opacity-60">•</span>
               </span>
             ))}
