@@ -454,6 +454,38 @@ export type NewArrivalsProductsQuery = {
   };
 };
 
+export type CollectionWithImageFragment = Pick<
+  StorefrontAPI.Collection,
+  'id' | 'title' | 'handle' | 'updatedAt'
+> & {
+  image?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
+  >;
+};
+
+export type CollectionsWithImagesQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type CollectionsWithImagesQuery = {
+  collections: {
+    nodes: Array<
+      Pick<
+        StorefrontAPI.Collection,
+        'id' | 'title' | 'handle' | 'updatedAt'
+      > & {
+        image?: StorefrontAPI.Maybe<
+          Pick<
+            StorefrontAPI.Image,
+            'id' | 'url' | 'altText' | 'width' | 'height'
+          >
+        >;
+      }
+    >;
+  };
+};
+
 export type ArticleQueryVariables = StorefrontAPI.Exact<{
   articleHandle: StorefrontAPI.Scalars['String']['input'];
   blogHandle: StorefrontAPI.Scalars['String']['input'];
@@ -1294,7 +1326,7 @@ interface GeneratedQueryTypes {
     return: FeaturedCollectionQuery;
     variables: FeaturedCollectionQueryVariables;
   };
-  '#graphql\n  fragment FeaturedCollectionWithProducts on Collection {\n    id\n    title\n    handle\n    products(first: 4) {\n      nodes {\n        id\n        title\n        handle\n        featuredImage {\n          url\n          altText\n          width\n          height\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n  query FeaturedCollections($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 2, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...FeaturedCollectionWithProducts\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment FeaturedCollectionWithProducts on Collection {\n    id\n    title\n    handle\n    products(first: 4, sortKey: BEST_SELLING) {\n      nodes {\n        id\n        title\n        handle\n        featuredImage {\n          url\n          altText\n          width\n          height\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n  query FeaturedCollections($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 2, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...FeaturedCollectionWithProducts\n      }\n    }\n  }\n': {
     return: FeaturedCollectionsQuery;
     variables: FeaturedCollectionsQueryVariables;
   };
@@ -1305,6 +1337,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  fragment NewArrivalsProduct on Product {\n    id\n    title\n    handle\n    createdAt\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query NewArrivalsProducts($country: CountryCode, $language: LanguageCode, $first: Int = 4)\n    @inContext(country: $country, language: $language) {\n    products(first: $first, sortKey: CREATED_AT, reverse: true) {\n      nodes {\n        ...NewArrivalsProduct\n      }\n    }\n  }\n': {
     return: NewArrivalsProductsQuery;
     variables: NewArrivalsProductsQueryVariables;
+  };
+  '#graphql\n  fragment CollectionWithImage on Collection {\n    id\n    title\n    handle\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    updatedAt\n  }\n  query CollectionsWithImages($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 10, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...CollectionWithImage\n      }\n    }\n  }\n': {
+    return: CollectionsWithImagesQuery;
+    variables: CollectionsWithImagesQueryVariables;
   };
   '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;

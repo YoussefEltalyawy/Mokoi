@@ -154,17 +154,27 @@ export function FeaturedCollections({
       animate={{opacity: isVisible ? 1 : 0}}
       transition={{duration: 0.8}}
     >
-      <h2 className="uppercase text-2xl font-bold tracking-tight">
-        <TextScramble trigger={isVisible} speed={0.4} duration={1.8}>
-          COLLECTIONS
-        </TextScramble>
-      </h2>
+      {/* Black bar with marquee text */}
+      <div className="w-full py-3 overflow-hidden mb-4">
+        <div className="animate-marquee">
+          {Array(20)
+            .fill(0)
+            .map((_, i) => (
+              <span
+                key={i}
+                className="text-black uppercase font-bold mx-2 text-6xl md:text-8xl"
+              >
+                BEST SELLERS
+              </span>
+            ))}
+        </div>
+      </div>
 
       <div className="flex gap-4 mb-4">
         <h3 className="text-md text-black/90">
-          <TextScramble trigger={isVisible} speed={0.4} duration={1.5}>
+          {/* <TextScramble trigger={isVisible} speed={0.4} duration={1.5}>
             Best Sellers
-          </TextScramble>
+          </TextScramble> */}
         </h3>
       </div>
 
