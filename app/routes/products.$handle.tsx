@@ -20,7 +20,7 @@ import type {
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
-    {title: `Salty | ${data?.product.title ?? ''}`},
+    {title: `MOKOI | ${data?.product.title ?? ''}`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,

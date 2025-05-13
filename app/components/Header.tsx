@@ -62,7 +62,10 @@ export function Header({
           <NavLink prefetch="intent" to="/" end>
             <Image
               src="/mokoi-text-logo-black.png"
-              className="h-3"
+              className="h-8 lg:h-10 w-auto object-contain"
+              sizes="(min-width: 1024px) 160px, 120px"
+              width={160}
+              height={40}
               alt="Logo"
             />
           </NavLink>

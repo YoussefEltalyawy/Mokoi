@@ -1,129 +1,66 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from '@remix-run/react';
-import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import {NavLink} from '@remix-run/react';
+import { Facebook, Instagram } from 'lucide-react';
 
-interface FooterProps {
-  footer: Promise<FooterQuery | null>;
-  header: HeaderQuery;
-  publicStoreDomain: string;
-}
 
-export function Footer({
-  footer: footerPromise,
-  header,
-  publicStoreDomain,
-}: FooterProps) {
+export function Footer() {
+    const currentYear = new Date().getFullYear();
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
-          </footer>
-        )}
-      </Await>
-    </Suspense>
+    <footer className="bg-black text-white">
+      <div className="container mx-auto px-4 py-6 md:py-4">
+        <div className="flex flex-col gap-6 md:flex-row md:justify-between md:items-center">
+          {/* Copyright and Developer Info */}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center text-center md:text-left">
+            <span className="text-sm">© {currentYear} MOKOI.</span>
+            <span className="text-sm md:before:content-['•'] md:before:mx-2 md:before:text-brandBeige/50">
+              Developed by{' '}
+              <a
+                href="https://talyawy.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white font-black hover:text-brandBeige/70 transition-colors underline-offset-4 hover:underline"
+              >
+                @talyawy.dev
+              </a>
+            </span>
+          </div>
+
+          {/* Social Links and Terms */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="flex justify-center gap-6 md:gap-4 text-white">
+              <a
+                href="https://facebook.com/salty.cai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-brandBeige/70 transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a
+                href="https://www.instagram.com/mokocollections.eg/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-brandBeige/70 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+            </div>
+
+            <div className="flex justify-center md:before:content-['•'] md:before:mx-2 md:before:text-brandBeige/50">
+              <a
+                href="/pages/terms-conditions"
+                className="text-sm text-white hover:text-brandBeige/70 transition-colors underline-offset-4 hover:underline"
+              >
+                Terms
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }
 
-function FooterMenu({
-  menu,
-  primaryDomainUrl,
-  publicStoreDomain,
-}: {
-  menu: FooterQuery['menu'];
-  primaryDomainUrl: FooterProps['header']['shop']['primaryDomain']['url'];
-  publicStoreDomain: string;
-}) {
-  return (
-    <nav className="footer-menu" role="navigation">
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
-        if (!item.url) return null;
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        const isExternal = !url.startsWith('/');
-        return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
-            {item.title}
-          </a>
-        ) : (
-          <NavLink
-            end
-            key={item.id}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
 
-const FALLBACK_FOOTER_MENU = {
-  id: 'gid://shopify/Menu/199655620664',
-  items: [
-    {
-      id: 'gid://shopify/MenuItem/461633060920',
-      resourceId: 'gid://shopify/ShopPolicy/23358046264',
-      tags: [],
-      title: 'Privacy Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/privacy-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633093688',
-      resourceId: 'gid://shopify/ShopPolicy/23358013496',
-      tags: [],
-      title: 'Refund Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/refund-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633126456',
-      resourceId: 'gid://shopify/ShopPolicy/23358111800',
-      tags: [],
-      title: 'Shipping Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/shipping-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633159224',
-      resourceId: 'gid://shopify/ShopPolicy/23358079032',
-      tags: [],
-      title: 'Terms of Service',
-      type: 'SHOP_POLICY',
-      url: '/policies/terms-of-service',
-      items: [],
-    },
-  ],
-};
 
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
-}
