@@ -64,7 +64,7 @@ export function Header({
               src="/mokoi-text-logo-black.png"
               className="h-8 lg:h-10 w-auto object-contain"
               sizes="(min-width: 1024px) 160px, 120px"
-              width={100}
+              width={80}
               height={40}
               alt="Logo"
             />
