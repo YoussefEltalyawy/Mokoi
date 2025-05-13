@@ -33,7 +33,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           <Link
             to="/collections/all"
             onClick={close}
-            className="flex items-center justify-between px-4 py-2 text-sm font-medium transition-colors bg-brandBeige rounded-md hover:bg-brandBeige/80"
+            className="flex items-center justify-between px-4 py-2 text-sm font-medium"
           >
             Continue Shopping
             <ArrowRight className="w-4 h-4" />

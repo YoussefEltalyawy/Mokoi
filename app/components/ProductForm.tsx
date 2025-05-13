@@ -88,7 +88,7 @@ export function ProductForm({
                   borderClass = 'border-gray-300';
                 } else if (selected) {
                   // Standard selected state for other colors
-                  borderClass = 'border-brandBeige';
+                  borderClass = 'border-black';
                 } else {
                   // Default unselected state
                   borderClass = 'border-transparent';

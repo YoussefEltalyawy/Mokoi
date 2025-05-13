@@ -32,7 +32,7 @@ function CartLineUpdateButton({lines, children}: CartLineUpdateButtonProps) {
         <div className="relative inline-flex items-center justify-center">
           <div className="opacity-50 pointer-events-none">{children}</div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="w-4 h-4 animate-spin text-brandBeige" />
+            <Loader2 className="w-4 h-4 animate-spin text-black" />
           </div>
         </div>
       );

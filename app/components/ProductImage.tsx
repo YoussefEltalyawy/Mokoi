@@ -77,7 +77,7 @@ function ProductImage({selectedVariantImage, images}: ProductImageProps) {
   };
   if (allImages.length < 1) {
     return (
-      <div className="aspect-square bg-brandBeige rounded-lg animate-pulse"></div>
+      <div className="aspect-square bg-black rounded-lg animate-pulse"></div>
     );
   }
 
@@ -87,7 +87,7 @@ function ProductImage({selectedVariantImage, images}: ProductImageProps) {
       <div className="space-y-4">
         {/* Main Image Container */}
         <div
-          className="aspect-square relative rounded-lg overflow-hidden bg-brandBeige cursor-zoom-in"
+          className="aspect-square relative rounded-lg overflow-hidden bg-black/80 cursor-zoom-in"
           role="button"
           tabIndex={0}
           onClick={() => !isDragging && openModal(selectedIndex)}
@@ -158,7 +158,7 @@ function ProductImage({selectedVariantImage, images}: ProductImageProps) {
               onClick={() => setSelectedIndex(index)}
               className={`h-2 w-2 rounded-full transition-all duration-300 ${
                 selectedIndex === index
-                  ? 'bg-brandBeige w-4'
+                  ? 'bg-black w-4'
                   : 'bg-black/70 hover:bg-black/40'
               }`}
             ></button>

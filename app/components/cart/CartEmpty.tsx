@@ -14,7 +14,7 @@ function CartEmpty({
     <div hidden={hidden}>
       <div className="flex flex-col items-center justify-center h-96 px-6 text-center">
         <div className="mb-6 p-6 bg-gray-50 rounded-full">
-          <ShoppingBag className="w-8 h-8 text-brandBeige" />
+          <ShoppingBag className="w-8 h-8 text-black" />
         </div>
 
         <h2 className="text-xl font-medium mb-2">Oops! Your cart is empty.</h2>
