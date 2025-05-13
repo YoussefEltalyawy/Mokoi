@@ -105,7 +105,7 @@
             {/* Left Side - Image */}
             <div className="space-y-8">
               <ProductImage
-                images={product.images.nodes.map((node: {id: string; url: string; altText: string | null; width: number; height: number}) => ({
+                images={product.images.nodes.map((node) => ({
                   id: node.id,
                   url: node.url,
                   altText: node.altText,

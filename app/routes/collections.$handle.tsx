@@ -4,9 +4,12 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
+import {TextScramble} from '~/components/ui/text-scramble';
+import {useState, useEffect, useRef} from 'react';
+import {motion} from 'framer-motion';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  return [{title: `MOKOI | ${data?.collection.title ?? ''} Collection`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -70,23 +73,72 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
+  const [triggerScramble, setTriggerScramble] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setTriggerScramble(true);
+          observer.disconnect();
+        }
+      },
+      {threshold: 0.1}
+    );
+
+    if (titleRef.current) {
+      observer.observe(titleRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
-      <PaginatedResourceSection
-        connection={collection.products}
-        resourcesClassName="products-grid"
+    <div className="collection w-full py-8 px-4 md:px-8 lg:px-12">
+      <motion.div 
+        initial={{opacity: 0, y: 20}}
+        animate={{opacity: 1, y: 0}}
+        transition={{duration: 0.6}}
+        className="mb-8 text-center"
       >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
+        <h1 
+          ref={titleRef} 
+          className="text-3xl md:text-5xl font-semibold mb-4"
+        >
+          <TextScramble trigger={triggerScramble}>
+            {collection.title}
+          </TextScramble>
+        </h1>
+        <div className="w-24 h-1 bg-black mx-auto my-4"></div>
+        {collection.description && (
+          <p className="text-black/70 max-w-2xl mx-auto">
+            {collection.description}
+          </p>
         )}
-      </PaginatedResourceSection>
+      </motion.div>
+      
+      <div className="bg-white/50 backdrop-blur-sm rounded-lg p-4 md:p-8">
+        <PaginatedResourceSection
+          connection={collection.products}
+          resourcesClassName="products-grid gap-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        >
+          {({node: product, index}) => (
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.4, delay: index * 0.1}}
+              key={product.id}
+            >
+              <ProductItem
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+              />
+            </motion.div>
+          )}
+        </PaginatedResourceSection>
+      </div>
       <Analytics.CollectionView
         data={{
           collection: {
@@ -97,6 +149,7 @@ export default function Collection() {
       />
     </div>
   );
+
 }
 
 const PRODUCT_ITEM_FRAGMENT = `#graphql
