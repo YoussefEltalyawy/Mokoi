@@ -1338,7 +1338,7 @@ interface GeneratedQueryTypes {
     return: NewArrivalsProductsQuery;
     variables: NewArrivalsProductsQueryVariables;
   };
-  '#graphql\n  fragment CollectionWithImage on Collection {\n    id\n    title\n    handle\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    updatedAt\n  }\n  query CollectionsWithImages($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 10, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...CollectionWithImage\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment CollectionWithImage on Collection {\n    id\n    title\n    handle\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    updatedAt\n  }\n  query CollectionsWithImages($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 30, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...CollectionWithImage\n      }\n    }\n  }\n': {
     return: CollectionsWithImagesQuery;
     variables: CollectionsWithImagesQueryVariables;
   };

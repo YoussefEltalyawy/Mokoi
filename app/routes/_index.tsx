@@ -234,13 +234,13 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
       // Filter to only include collections with images and sort by updatedAt
       if (response?.collections?.nodes) {
         const filtered = response.collections.nodes
-          .filter((collection: CollectionWithImage) => collection.image?.url)
-          .sort((a: CollectionWithImage, b: CollectionWithImage) => {
+          .filter((collection) => collection.image?.url)
+          .sort((a, b) => {
             // Sort by updatedAt, newest first
             return (
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
             );
-            });
+          });
 
         return {
           collections: {
@@ -312,4 +312,3 @@ export default function Homepage() {
     </div>
   );
 }
-
