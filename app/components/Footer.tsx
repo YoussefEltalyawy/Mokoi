@@ -27,7 +27,7 @@ export function Footer() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <div className="flex justify-center gap-6 md:gap-4 text-white">
               <a
-                href="https://facebook.com/salty.cai"
+                href="https://facebook.com/mokocollections"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-brandBeige/70 transition-colors"
