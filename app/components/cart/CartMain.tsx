@@ -31,9 +31,9 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const isAside = layout === 'aside';
 
   return (
-    <div className="flex flex-col h-full min-h-full">
+    <div className="flex flex-col h-full">
       {cartHasItems ? (
-        <div className="flex flex-col h-full relative">
+        <div className="flex flex-col h-full">
           {/* Header */}
           <div className="border-b border-black/10 py-4">
             <h2 className="text-xl font-semibold uppercase tracking-wide text-center">
@@ -45,15 +45,15 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
             </p>
           </div>
 
-          {/* Cart Items - with fixed height */}
-          <div className="h-[calc(100vh-300px)] overflow-y-auto">
+          {/* Cart Items - flexible height with scrolling */}
+          <div className="flex-1 overflow-y-auto">
             {(cart?.lines?.nodes ?? []).map((line) => (
               <CartLineItem key={line.id} line={line} layout={layout} />
             ))}
           </div>
 
-          {/* Summary - fixed to bottom */}
-          <div className="absolute left-0 right-0 bottom-0 bg-white border-t border-black/10 z-10">
+          {/* Summary - always at the bottom */}
+          <div className="sticky bottom-0 bg-white border-t border-black/10 mt-auto">
             <CartSummary cart={cart} layout={layout} />
           </div>
         </div>

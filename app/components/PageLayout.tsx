@@ -38,27 +38,27 @@ export function PageLayout({
 
   return (
     <Aside.Provider>
-      <CartAside cart={cart} />
-      <SearchAside />
-      <MobileMenuAside
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-        isLoggedIn={isLoggedIn}
-      />
-      {header && (
-        <Header
+      <div className="flex flex-col min-h-screen">
+        <CartAside cart={cart} />
+        <SearchAside />
+        <MobileMenuAside
           header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          isLoggedIn={isLoggedIn}
         />
-      )}
-      <main className={!isHomePage ? 'pt-16' : ''}>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+        {header && (
+          <Header
+            header={header}
+            cart={cart}
+            isLoggedIn={isLoggedIn}
+            publicStoreDomain={publicStoreDomain}
+          />
+        )}
+        <main className={`flex-grow ${!isHomePage ? 'pt-16' : ''}`}>
+          {children}
+        </main>
+        <Footer />
+      </div>
     </Aside.Provider>
   );
 }

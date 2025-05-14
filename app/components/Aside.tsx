@@ -141,7 +141,7 @@ export function Aside({
           </button>
         </header>
 
-        <main className="flex-1 overflow-hidden p-0 flex flex-col">
+        <main className="flex-1 flex flex-col h-full overflow-hidden">
           {children}
         </main>
       </div>

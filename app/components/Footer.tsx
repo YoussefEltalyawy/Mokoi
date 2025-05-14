@@ -1,11 +1,10 @@
 import {NavLink} from '@remix-run/react';
-import { Facebook, Instagram } from 'lucide-react';
-
+import {Facebook, Instagram} from 'lucide-react';
 
 export function Footer() {
-    const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
   return (
-    <footer className="bg-black text-white">
+    <footer className="bg-black text-white mt-auto">
       <div className="container mx-auto px-4 py-6 md:py-4">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:items-center">
           {/* Copyright and Developer Info */}
@@ -61,6 +60,3 @@ export function Footer() {
     </footer>
   );
 }
-
-
-
