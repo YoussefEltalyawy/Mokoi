@@ -40,37 +40,56 @@ export default function SearchPage() {
   if (type === 'predictive') return null;
 
   return (
-    <div className="search">
-      <h1>Search</h1>
-      <SearchForm>
-        {({inputRef}) => (
-          <>
-            <input
-              defaultValue={term}
-              name="q"
-              placeholder="Search…"
-              ref={inputRef}
-              type="search"
-            />
-            &nbsp;
-            <button type="submit">Search</button>
-          </>
-        )}
-      </SearchForm>
-      {error && <p style={{color: 'red'}}>{error}</p>}
-      {!term || !result?.total ? (
-        <SearchResults.Empty />
-      ) : (
-        <SearchResults result={result} term={term}>
-          {({articles, pages, products, term}) => (
-            <div>
-              <SearchResults.Products products={products} term={term} />
-              <SearchResults.Pages pages={pages} term={term} />
-              <SearchResults.Articles articles={articles} term={term} />
+    <div className="min-h-[80vh] px-4 md:px-8 py-8 md:py-12 max-w-7xl mx-auto">
+      <div className="w-full max-w-3xl mx-auto mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-4xl font-semibold text-black mb-6 uppercase tracking-wide text-center">
+          Search
+        </h1>
+        <SearchForm className="w-full flex items-center justify-center">
+          {({inputRef}) => (
+            <div className="relative w-full flex flex-col md:flex-row items-center gap-2">
+              <input
+                defaultValue={term}
+                name="q"
+                placeholder="Search for products, articles, pages..."
+                ref={inputRef}
+                type="search"
+                className="w-full md:flex-1 px-6 py-3 rounded-lg border border-gray-300 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              />
+              <button
+                type="submit"
+                className="w-full md:w-auto px-6 py-3 bg-black text-white font-bold uppercase rounded-lg hover:bg-black/80 transition-colors duration-300 tracking-wider"
+              >
+                Search
+              </button>
             </div>
           )}
-        </SearchResults>
+        </SearchForm>
+      </div>
+
+      {error && (
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-red-500 font-medium">{error}</p>
+        </div>
       )}
+
+      <div className="max-w-6xl mx-auto">
+        {!term || !result?.total ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <SearchResults.Empty />
+          </div>
+        ) : (
+          <SearchResults result={result} term={term}>
+            {({articles, pages, products, term}) => (
+              <div className="grid grid-cols-1 gap-8">
+                <SearchResults.Products products={products} term={term} />
+                <SearchResults.Pages pages={pages} term={term} />
+                <SearchResults.Articles articles={articles} term={term} />
+              </div>
+            )}
+          </SearchResults>
+        )}
+      </div>
       <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
     </div>
   );

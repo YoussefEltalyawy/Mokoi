@@ -26,7 +26,7 @@ export const SEARCH_ENDPOINT = '/search';
  **/
 export function SearchFormPredictive({
   children,
-  className = 'predictive-search-form',
+  className = 'w-full flex items-center justify-center',
   ...props
 }: SearchFormPredictiveProps) {
   const fetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});

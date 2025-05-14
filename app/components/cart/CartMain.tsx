@@ -28,13 +28,14 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
   const className = `cart-main ${withDiscount ? 'with-discount' : ''} font-poppins`;
   const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
+  const isAside = layout === 'aside';
 
   return (
-    <div className={className}>
-      <CartEmpty hidden={linesCount} layout={layout} />
-      <div className="cart-details">
-        {cartHasItems && (
-          <div className="border-b border-black/10 py-4 mb-2">
+    <div className="flex flex-col h-full min-h-full">
+      {cartHasItems ? (
+        <div className="flex flex-col h-full relative">
+          {/* Header */}
+          <div className="border-b border-black/10 py-4">
             <h2 className="text-xl font-semibold uppercase tracking-wide text-center">
               Your Cart
             </h2>
@@ -43,22 +44,22 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
               in your cart
             </p>
           </div>
-        )}
-        <div aria-labelledby="cart-lines" className="pt-2">
-          <ul
-            className={
-              layout === 'aside'
-                ? 'max-h-[calc(100vh-300px)] overflow-y-auto'
-                : ''
-            }
-          >
+
+          {/* Cart Items - with fixed height */}
+          <div className="h-[calc(100vh-300px)] overflow-y-auto">
             {(cart?.lines?.nodes ?? []).map((line) => (
               <CartLineItem key={line.id} line={line} layout={layout} />
             ))}
-          </ul>
+          </div>
+
+          {/* Summary - fixed to bottom */}
+          <div className="absolute left-0 right-0 bottom-0 bg-white border-t border-black/10 z-10">
+            <CartSummary cart={cart} layout={layout} />
+          </div>
         </div>
-        {cartHasItems && <CartSummary cart={cart} layout={layout} />}
-      </div>
+      ) : (
+        <CartEmpty hidden={false} layout={layout} />
+      )}
     </div>
   );
 }

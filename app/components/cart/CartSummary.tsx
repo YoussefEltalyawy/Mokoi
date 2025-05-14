@@ -21,44 +21,37 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   const isPage = layout === 'page';
 
   return (
-    <div
-      className={`
-      ${isPage ? 'mt-8' : 'fixed bottom-4 left-4 z-50 w-full pr-8 bg-white shadow-md rounded-lg'}
-      transition-all duration-300
-    `}
-    >
-      <div className="p-6 border-t border-black/10">
-        <div className="space-y-4">
-          {/* Subtotal */}
-          <div className="flex justify-between text-base font-medium">
-            <span className="text-black/70">Subtotal</span>
-            <span className="font-semibold">
-              {cart.cost?.subtotalAmount?.amount ? (
-                <Money data={cart.cost?.subtotalAmount} />
-              ) : (
-                '-'
-              )}
-            </span>
-          </div>
-
-          {/* Shipping note */}
-          <p className="text-sm text-black/60 italic">
-            Shipping and taxes calculated at checkout
-          </p>
-
-          {/* Checkout Button */}
-          <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
-
-          {/* Continue Shopping */}
-          <Link
-            to="/collections/all"
-            onClick={close}
-            className="flex items-center justify-center gap-2 w-full text-sm font-medium text-black/80 hover:text-black transition-colors py-2"
-          >
-            Continue Shopping
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+    <div className="px-4 py-4">
+      <div className="space-y-3">
+        {/* Subtotal */}
+        <div className="flex justify-between text-base font-medium">
+          <span className="text-black/70">Subtotal</span>
+          <span className="font-semibold">
+            {cart.cost?.subtotalAmount?.amount ? (
+              <Money data={cart.cost?.subtotalAmount} />
+            ) : (
+              '-'
+            )}
+          </span>
         </div>
+
+        {/* Shipping note */}
+        <p className="text-sm text-black/60 italic">
+          Shipping and taxes calculated at checkout
+        </p>
+
+        {/* Checkout Button */}
+        <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
+
+        {/* Continue Shopping */}
+        <Link
+          to="/collections/all"
+          onClick={close}
+          className="flex items-center justify-center gap-2 w-full text-sm font-medium text-black/80 hover:text-black transition-colors py-2"
+        >
+          Continue Shopping
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
     </div>
   );

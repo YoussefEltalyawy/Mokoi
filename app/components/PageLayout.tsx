@@ -14,7 +14,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
-import { CartMain } from './cart/CartMain';
+import {CartMain} from './cart/CartMain';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -25,7 +25,7 @@ interface PageLayoutProps {
   children?: React.ReactNode;
 }
 
-export function   PageLayout({
+export function PageLayout({
   cart,
   children = null,
   footer,
@@ -68,9 +68,7 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
     <Aside type="cart" heading="CART">
       <Suspense fallback={<p>Loading cart ...</p>}>
         <Await resolve={cart}>
-          {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
-          }}
+          {(cart) => <CartMain cart={cart} layout="aside" />}
         </Await>
       </Suspense>
     </Aside>

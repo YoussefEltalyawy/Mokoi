@@ -20,8 +20,14 @@ type SearchFormProps = Omit<FormProps, 'children'> & {
  *        defaultValue={term}
  *        name="q"
  *        placeholder="Search…"
+ *        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
  *      />
- *      <button type="submit">Search</button>
+ *      <button
+ *        type="submit"
+ *        className="px-6 py-2 bg-black text-white font-bold uppercase rounded-lg hover:bg-black/80 transition-colors"
+ *      >
+ *        Search
+ *      </button>
  *   </>
  *  )}
  *  </SearchForm>
@@ -36,7 +42,7 @@ export function SearchForm({children, ...props}: SearchFormProps) {
   }
 
   return (
-    <Form method="get" {...props}>
+    <Form method="get" action="/search" className="w-full" {...props}>
       {children({inputRef})}
     </Form>
   );
@@ -49,7 +55,7 @@ function useFocusOnCmdK(inputRef: React.RefObject<HTMLInputElement>) {
   // focus the input when cmd+k is pressed
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'k' && event.metaKey) {
+      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         inputRef.current?.focus();
       }
