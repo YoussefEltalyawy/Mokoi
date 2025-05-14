@@ -26,15 +26,32 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const withDiscount =
     cart &&
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
-  const className = `cart-main ${withDiscount ? 'with-discount' : ''}`;
+  const className = `cart-main ${withDiscount ? 'with-discount' : ''} font-poppins`;
   const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
 
   return (
     <div className={className}>
       <CartEmpty hidden={linesCount} layout={layout} />
       <div className="cart-details">
-        <div aria-labelledby="cart-lines">
-          <ul>
+        {cartHasItems && (
+          <div className="border-b border-black/10 py-4 mb-2">
+            <h2 className="text-xl font-semibold uppercase tracking-wide text-center">
+              Your Cart
+            </h2>
+            <p className="text-sm text-center text-black/60 mt-1">
+              {cart.totalQuantity} {cart.totalQuantity === 1 ? 'item' : 'items'}{' '}
+              in your cart
+            </p>
+          </div>
+        )}
+        <div aria-labelledby="cart-lines" className="pt-2">
+          <ul
+            className={
+              layout === 'aside'
+                ? 'max-h-[calc(100vh-300px)] overflow-y-auto'
+                : ''
+            }
+          >
             {(cart?.lines?.nodes ?? []).map((line) => (
               <CartLineItem key={line.id} line={line} layout={layout} />
             ))}
@@ -45,4 +62,3 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
     </div>
   );
 }
-

@@ -19,30 +19,20 @@ type CartSummaryProps = {
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const {close} = useAside();
   const isPage = layout === 'page';
-  // fixed bottom-4 left-4 z-50 w-full pr-8
+
   return (
     <div
       className={`
-      fixed bottom-4 left-4 z-50 w-full pr-8
-      bg-white
+      ${isPage ? 'mt-8' : 'fixed bottom-4 left-4 z-50 w-full pr-8 bg-white shadow-md rounded-lg'}
+      transition-all duration-300
     `}
     >
-      <div className="p-4">
-        <div className="space-y-3">
-          {/* Continue Shopping */}
-          <Link
-            to="/collections/all"
-            onClick={close}
-            className="flex items-center justify-between px-4 py-2 text-sm font-medium"
-          >
-            Continue Shopping
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-
+      <div className="p-6 border-t border-black/10">
+        <div className="space-y-4">
           {/* Subtotal */}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Subtotal</span>
-            <span className="font-medium">
+          <div className="flex justify-between text-base font-medium">
+            <span className="text-black/70">Subtotal</span>
+            <span className="font-semibold">
               {cart.cost?.subtotalAmount?.amount ? (
                 <Money data={cart.cost?.subtotalAmount} />
               ) : (
@@ -50,8 +40,24 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
               )}
             </span>
           </div>
+
+          {/* Shipping note */}
+          <p className="text-sm text-black/60 italic">
+            Shipping and taxes calculated at checkout
+          </p>
+
           {/* Checkout Button */}
           <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
+
+          {/* Continue Shopping */}
+          <Link
+            to="/collections/all"
+            onClick={close}
+            className="flex items-center justify-center gap-2 w-full text-sm font-medium text-black/80 hover:text-black transition-colors py-2"
+          >
+            Continue Shopping
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </div>
@@ -78,10 +84,9 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
       href={checkoutUrl}
       target="_self"
       onClick={handleCheckout}
-      className="block w-full bg-black text-white text-center py-2.5 px-4 rounded-md hover:bg-gray-800 transition-colors mt-4"
+      className="block w-full bg-black text-white text-center py-3 px-4 rounded-md hover:bg-black/90 transition-all duration-300 uppercase tracking-wider font-medium"
     >
-      <p className='text-white'>Continue to Checkout</p>
+      Checkout
     </a>
   );
 }
-
