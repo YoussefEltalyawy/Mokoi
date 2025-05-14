@@ -4,9 +4,12 @@ import type {
   Maybe,
   ProductOptionValueSwatch,
 } from '@shopify/hydrogen/storefront-api-types';
-import {AddToCartButton} from './AddToCartButton';
-import {useAside} from './Aside';
-import type {ProductFragment} from 'storefrontapi.generated';
+import {motion, AnimatePresence} from 'framer-motion';
+import {useState, useEffect} from 'react';
+import {TextScramble} from '~/components/ui/text-scramble'; // Assuming this component exists
+import {AddToCartButton} from './AddToCartButton'; // Using the updated AddToCartButton
+import {useAside} from './Aside'; // Assuming this hook exists
+import type {ProductFragment} from 'storefrontapi.generated'; // Assuming this type exists
 
 export function ProductForm({
   productOptions,
@@ -16,231 +19,324 @@ export function ProductForm({
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
 }) {
   const navigate = useNavigate();
-  const {open} = useAside();
+  const {open} = useAside(); // Context or hook to open a side panel (e.g., cart)
+  // Removed addingToCart state as AddToCartButton now handles its internal loading state
+  const [scaleButton, setScaleButton] = useState(false); // For AddToCartButton mount animation
+  const [activeVariant, setActiveVariant] = useState<string | null>(null); // For option button click animation
+  const [scrambleText, setScrambleText] = useState(false); // For AddToCartButton text animation
+
+  // Animation for AddToCartButton on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setScaleButton(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Trigger text scramble effect for AddToCartButton
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setScrambleText(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle opening the cart after a successful addition.
+  // The actual "adding" state is managed within AddToCartButton.
+  const handleAfterAddToCart = () => {
+    setTimeout(() => {
+      open('cart');
+    }, 600); // Delay to allow user to see "Added" message
+  };
 
   return (
-    <div className="space-y-6 font-poppins">
-      {productOptions.map((option) => {
-        if (option.optionValues.length === 1) return null;
+    <div className="space-y-8 font-poppins">
+      {/* Product options selection */}
+      <motion.div
+        initial={{opacity: 0, y: 20}}
+        animate={{opacity: 1, y: 0}}
+        transition={{duration: 0.6}}
+        className="space-y-8"
+      >
+        {productOptions.map((option, idx) => {
+          // Skip rendering if there's only one value for the option (no choice to make)
+          if (option.optionValues.length === 1) return null;
 
-        // Determine if this option is a color option
-        const isColorOption =
-          option.name.toLowerCase() === 'color' ||
-          option.name.toLowerCase().includes('color');
+          // Determine if this option is a color option
+          const isColorOption =
+            option.name.toLowerCase() === 'color' ||
+            option.name.toLowerCase().includes('color');
 
-        return (
-          <div key={option.name} className="space-y-4">
-            <h5 className="text-sm font-medium text-gray-900 uppercase tracking-wide">
-              {option.name}
-            </h5>
-            <div className="grid grid-cols-3 gap-4">
-              {option.optionValues.map((value) => {
-                const {
-                  name,
-                  handle,
-                  variantUriQuery,
-                  selected,
-                  available,
-                  exists,
-                  isDifferentProduct,
-                  swatch,
-                } = value;
+          return (
+            <motion.div
+              key={option.name}
+              className="space-y-4"
+              initial={{opacity: 0, y: 15}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.5, delay: 0.1 * idx}}
+            >
+              <div className="flex items-center justify-between">
+                {/* Option name */}
+                <motion.h5
+                  className="text-sm font-medium text-black uppercase tracking-wide"
+                  initial={{opacity: 0, x: -20}}
+                  animate={{opacity: 1, x: 0}}
+                  transition={{duration: 0.5, delay: 0.2 + 0.1 * idx}}
+                >
+                  {option.name}
+                </motion.h5>
 
-                // For color options, determine style and behavior
-                let buttonStyle = {};
-                let showText = true;
-                let colorValue =
-                  swatch?.color ||
-                  (/^(#|rgb|hsl|[a-zA-Z]+)$/.test(name) && name !== 'Default'
-                    ? name
-                    : undefined);
+                {/* Available options count */}
+                <motion.span
+                  className="text-xs text-gray-500"
+                  initial={{opacity: 0}}
+                  animate={{opacity: 1}}
+                  transition={{duration: 0.5, delay: 0.3 + 0.1 * idx}}
+                >
+                  {option.optionValues.filter((v) => v.available).length}{' '}
+                  {option.optionValues.filter((v) => v.available).length === 1
+                    ? 'option'
+                    : 'options'}{' '}
+                  available
+                </motion.span>
+              </div>
 
-                // Check if color is white or very light
-                const isWhiteColor =
-                  colorValue?.toLowerCase() === '#fff' ||
-                  colorValue?.toLowerCase() === '#ffffff' ||
-                  colorValue?.toLowerCase() === 'white' ||
-                  colorValue?.replace(/\s/g, '').toLowerCase() ===
-                    'rgb(255,255,255)';
+              {/* Option values grid */}
+              <motion.div
+                className={`grid ${
+                  isColorOption
+                    ? 'grid-cols-5 sm:grid-cols-6' // More columns for colors
+                    : 'grid-cols-3' // Consistent 3 columns for sizes/other options
+                } gap-3`}
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                transition={{duration: 0.6, delay: 0.2}}
+              >
+                {option.optionValues.map((value) => {
+                  const {
+                    name,
+                    handle, // Product handle if this variant is on a different product
+                    variantUriQuery, // Query string for this specific variant option
+                    selected, // Is this option value currently selected?
+                    available, // Is the variant with this option available?
+                    exists, // Does a variant with this option exist?
+                    isDifferentProduct, // Is this option leading to a different product?
+                    swatch, // Color swatch data from Shopify
+                  } = value;
 
-                // Check if color is black
-                const isBlackColor =
-                  colorValue?.toLowerCase() === '#000' ||
-                  colorValue?.toLowerCase() === '#000000' ||
-                  colorValue?.toLowerCase() === 'black' ||
-                  colorValue?.replace(/\s/g, '').toLowerCase() === 'rgb(0,0,0)';
+                  let buttonStyle = {};
+                  // Try to get color from swatch or name
+                  let colorValue =
+                    swatch?.color ||
+                    (/^(#|rgb|hsl|[a-zA-Z]+)$/.test(name) && name !== 'Default'
+                      ? name
+                      : undefined);
 
-                if (isColorOption && colorValue) {
-                  buttonStyle = {
-                    backgroundColor: colorValue,
-                    transition: 'all 0.2s ease-in-out',
-                  };
-                  showText = false;
-                }
+                  // Check if color is white or very light for potential border adjustments if needed
+                  const isWhiteColor =
+                    colorValue?.toLowerCase() === '#fff' ||
+                    colorValue?.toLowerCase() === '#ffffff' ||
+                    colorValue?.toLowerCase() === 'white' ||
+                    colorValue?.replace(/\s/g, '').toLowerCase() ===
+                      'rgb(255,255,255)';
 
-                // Determine border class based on color and selection state
-                let borderClass = '';
-                if (isWhiteColor) {
-                  // White color always needs a visible border
-                  borderClass = selected ? 'border-black' : 'border-gray-300';
-                } else if (isBlackColor && selected) {
-                  // Black color needs a visible border when selected
-                  borderClass = 'border-gray-300';
-                } else if (selected) {
-                  // Standard selected state for other colors
-                  borderClass = 'border-black';
-                } else {
-                  // Default unselected state
-                  borderClass = 'border-transparent';
-                }
-
-                // Determine availability styling
-                const availabilityClass = !available
-                  ? 'relative opacity-70 cursor-not-allowed bg-gray-200 hover:bg-gray-200'
-                  : '';
-
-                const baseClassName = `
-                  relative
-                  flex
-                  w-full
-                  h-12
-                  items-center
-                  justify-center
-                  p-3
-                  rounded-lg
-                  border-2
-                  transition-all duration-200
-                  ${
-                    selected
-                      ? 'bg-white text-gray-900'
-                      : 'bg-gray-100 hover:bg-gray-200'
+                  if (isColorOption && colorValue) {
+                    buttonStyle = {
+                      backgroundColor: colorValue,
+                    };
                   }
-                  ${borderClass}
-                  ${availabilityClass}
-                `;
 
-                // Create component content
-                const buttonContent = (
-                  <>
-                    {isColorOption && colorValue ? (
-                      <span className="sr-only">{name}</span>
-                    ) : (
-                      <span className="text-sm text-gray-700">{name}</span>
-                    )}
-                    {/* Add soldout indicator */}
-                    {!available && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-                        <div className="w-full h-0.5 bg-red-500 rotate-45 transform origin-center"></div>
-                      </div>
-                    )}
-                  </>
-                );
+                  // Base classes for option buttons
+                  const baseClassName = `
+                    group
+                    flex
+                    items-center 
+                    justify-center
+                    ${
+                      isColorOption
+                        ? 'w-8 h-8 rounded-full' // MODIFIED: Smaller color circles
+                        : 'py-3 px-2 rounded-lg' // Padding for text options
+                    }
+                    overflow-hidden
+                    relative
+                    transition-all
+                    duration-300
+                    ${
+                      !available
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:scale-105'
+                    }
+                    ${
+                      selected
+                        ? isColorOption
+                          ? `ring-2 ${isWhiteColor ? 'ring-gray-400' : 'ring-black'} ring-offset-2` // Ring for selected color
+                          : 'bg-black text-white' // Style for selected text option
+                        : isColorOption
+                          ? `ring-1 ${isWhiteColor ? 'ring-gray-300' : 'ring-gray-200'} ring-offset-1` // Default ring for color
+                          : 'bg-gray-100 text-black hover:bg-gray-200' // Style for unselected text option
+                    }
+                  `;
 
-                if (isDifferentProduct) {
+                  // Content of the button (color swatch or text)
+                  const buttonContent = (
+                    <>
+                      {isColorOption && colorValue ? (
+                        <>
+                          <span className="sr-only">{name}</span>{' '}
+                          {/* Accessibility */}
+                          {/* Animated selection indicator for colors (e.g., a small dot) */}
+                          <AnimatePresence>
+                            {selected && (
+                              <motion.div
+                                className="absolute inset-0 flex items-center justify-center z-10"
+                                initial={{opacity: 0, scale: 0.5}}
+                                animate={{opacity: 1, scale: 1}}
+                                exit={{opacity: 0, scale: 0.5}}
+                              >
+                                <div
+                                  className={`w-2 h-2 rounded-full ${isWhiteColor ? 'bg-black' : 'bg-white'} shadow-md`}
+                                ></div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </>
+                      ) : (
+                        // Text content for non-color options
+                        <div className="relative z-10">
+                          <span
+                            className={`text-sm font-medium ${selected ? 'font-semibold' : ''}`}
+                          >
+                            {name}
+                          </span>
+                          {/* Underline effect for selected text option */}
+                          {selected && !isColorOption && (
+                            <motion.div
+                              className="absolute -bottom-1 left-0 h-0.5 bg-white w-full" // Use w-full for underline
+                              initial={{width: '0%'}}
+                              animate={{width: '100%'}}
+                              transition={{duration: 0.3, delay: 0.1}}
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {/* "Sold out" diagonal line indicator */}
+                      {!available && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-20">
+                          <div className="w-[120%] h-0.5 bg-red-500 rotate-45 transform origin-center"></div>
+                        </div>
+                      )}
+                    </>
+                  );
+
+                  // If the option links to a different product, use a Link component
+                  if (isDifferentProduct) {
+                    return (
+                      <Link
+                        className={baseClassName}
+                        key={option.name + name}
+                        prefetch="intent"
+                        preventScrollReset
+                        replace // Replace history entry
+                        to={`/products/${handle}?${variantUriQuery}`}
+                        style={buttonStyle}
+                        aria-label={`${name}${!available ? ' (sold out)' : ''}`}
+                        onClick={() => {
+                          if (!available) return;
+                          // Potentially add visual feedback before navigation if desired
+                        }}
+                      >
+                        {buttonContent}
+                      </Link>
+                    );
+                  }
+
+                  // Otherwise, use a button to update the current product's variant
                   return (
-                    <Link
+                    <motion.button
+                      type="button"
                       className={baseClassName}
                       key={option.name + name}
-                      prefetch="intent"
-                      preventScrollReset
-                      replace
-                      to={`/products/${handle}?${variantUriQuery}`}
+                      disabled={!exists || !available}
+                      onClick={() => {
+                        if (!selected && available) {
+                          setActiveVariant(name); // Trigger click animation
+                          navigate(`?${variantUriQuery}`, {
+                            replace: true,
+                            preventScrollReset: true,
+                          });
+                          // Reset animation state after a short delay
+                          setTimeout(() => {
+                            setActiveVariant(null);
+                          }, 800);
+                        }
+                      }}
                       style={buttonStyle}
                       aria-label={`${name}${!available ? ' (sold out)' : ''}`}
+                      whileHover={available ? {scale: 1.05} : {}}
+                      whileTap={available ? {scale: 0.95} : {}}
+                      animate={{
+                        scale: activeVariant === name ? [1, 1.1, 1] : 1, // Pop animation on click
+                      }}
+                      transition={{
+                        duration: 0.4,
+                        ease: 'easeInOut',
+                      }}
                     >
                       {buttonContent}
-                    </Link>
+                    </motion.button>
                   );
-                }
+                })}
+              </motion.div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
 
-                return (
-                  <button
-                    type="button"
-                    className={baseClassName}
-                    key={option.name + name}
-                    disabled={!exists}
-                    onClick={() => {
-                      if (!selected) {
-                        navigate(`?${variantUriQuery}`, {
-                          replace: true,
-                          preventScrollReset: true,
-                        });
-                      }
-                    }}
-                    style={buttonStyle}
-                    aria-label={`${name}${!available ? ' (sold out)' : ''}`}
-                  >
-                    {buttonContent}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Add to cart button */}
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        afterAddToCart={() => open('cart')}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
+      {/* Add to Cart Button Section */}
+      <motion.div
+        initial={{opacity: 0, y: 20}}
+        animate={{
+          opacity: 1,
+          y: 0,
+          scale: scaleButton ? 1 : 0.95, // Initial scale animation
+        }}
+        transition={{
+          duration: 0.6,
+          delay: 0.5, // Delay to animate after options
+          scale: {
+            duration: 0.5,
+            ease: 'easeOut',
+          },
+        }}
+        className="relative"
       >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-      </AddToCartButton>
-    </div>
-  );
-}
-
-function ProductOptionSwatch({
-  swatch,
-  name,
-}: {
-  swatch?: Maybe<ProductOptionValueSwatch> | undefined;
-  name: string;
-}) {
-  const image = swatch?.image?.previewImage?.url;
-  const color = swatch?.color;
-
-  // Check if the name is a valid CSS color (basic check)
-  const isColor =
-    color || (/^(#|rgb|hsl|[a-zA-Z]+)$/.test(name) && name !== 'Default');
-  const colorValue = color || (isColor ? name : undefined);
-
-  if (!image && !colorValue) {
-    return <span className="text-sm text-gray-700">{name}</span>;
-  }
-
-  // Check if color is white to add special border styling
-  const isWhiteColor =
-    colorValue?.toLowerCase() === '#fff' ||
-    colorValue?.toLowerCase() === '#ffffff' ||
-    colorValue?.toLowerCase() === 'white' ||
-    colorValue?.replace(/\s/g, '').toLowerCase() === 'rgb(255,255,255)';
-
-  return (
-    <div
-      aria-label={name}
-      className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center ${
-        isWhiteColor ? 'ring-1 ring-gray-300' : 'ring-1 ring-gray-200'
-      }`}
-      style={{
-        backgroundColor: colorValue || 'transparent',
-      }}
-    >
-      {image ? (
-        <img src={image} alt={name} className="w-full h-full object-cover" />
-      ) : null}
-      {!image && colorValue && <span className="sr-only">{name}</span>}
+        <AddToCartButton
+          afterAddToCart={handleAfterAddToCart}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    // Remove selectedVariant field; attributes are optional
+                    attributes: [{key: 'someKey', value: 'someValue'}], // Optional
+                  },
+                ]
+              : []
+          }
+        >
+          {selectedVariant?.availableForSale ? (
+            <TextScramble trigger={scrambleText} speed={0.2} duration={0.8}>
+              ADD TO CART
+            </TextScramble>
+          ) : (
+            <TextScramble trigger={scrambleText} speed={0.2} duration={0.8}>
+              SOLD OUT
+            </TextScramble>
+          )}
+        </AddToCartButton>
+      </motion.div>
     </div>
   );
 }

@@ -170,13 +170,6 @@ export function FeaturedCollections({
         </div>
       </div>
 
-      <div className="flex gap-4 mb-4">
-        <h3 className="text-md text-black/90">
-          {/* <TextScramble trigger={isVisible} speed={0.4} duration={1.5}>
-            Best Sellers
-          </TextScramble> */}
-        </h3>
-      </div>
 
       <div className="flex gap-4 mt-2 mb-6 border-b border-gray-200">
         {collections.map((col, i) => (
