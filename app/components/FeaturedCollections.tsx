@@ -25,7 +25,7 @@ type Product = {
   };
 };
 
-type CollectionWithProductsFragment = {
+export type CollectionWithProductsFragment = {
   id: string;
   title: string;
   handle: string;
@@ -36,57 +36,14 @@ type CollectionWithProductsFragment = {
 
 export function FeaturedCollections({
   collections,
+  isBestSellers = false,
 }: {
   collections: CollectionWithProductsFragment[];
+  isBestSellers?: boolean;
 }) {
-  const [activeTab, setActiveTab] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftPos, setScrollLeftPos] = useState(0);
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
-    setScrollLeftPos(scrollRef.current?.scrollLeft || 0);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - (scrollRef.current?.offsetLeft || 0);
-    const walk = (x - startX) * 2;
-    if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollLeftPos - walk;
-    }
-  };
-
-  // Check scroll position to determine arrow visibility
-  const checkScrollPosition = () => {
-    if (!scrollRef.current) return;
-    const {scrollLeft, scrollWidth, clientWidth} = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-  };
-
-  // Call checkScrollPosition on component mount
-  useEffect(() => {
-    checkScrollPosition();
-  }, []);
-
-  // Call checkScrollPosition when active tab changes
-  useEffect(() => {
-    checkScrollPosition();
-  }, [activeTab]);
 
   // Intersection observer for section visibility
   useEffect(() => {
@@ -103,52 +60,16 @@ export function FeaturedCollections({
     return () => observer.disconnect();
   }, []);
 
-  // Global mouseup event listener
-  useEffect(() => {
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => window.removeEventListener('mouseup', handleMouseUp);
-  }, []);
-
-  // Scroll event listener
-  useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', checkScrollPosition);
-      return () =>
-        scrollContainer.removeEventListener('scroll', checkScrollPosition);
-    }
-  }, [activeTab]);
-
-  // Window resize event listener
-  useEffect(() => {
-    const handleResize = () => checkScrollPosition();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Scroll functions
-  const handleScrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({left: -300, behavior: 'smooth'});
-      // Check position after animation completes
-      setTimeout(checkScrollPosition, 500);
-    }
-  };
-
-  const handleScrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({left: 300, behavior: 'smooth'});
-      // Check position after animation completes
-      setTimeout(checkScrollPosition, 500);
-    }
-  };
-
   if (!collections?.length) return null;
-  const active = collections[activeTab];
+
+  // Use the first collection (Best Sellers)
+  const collection = collections[0];
+
+  if (!collection?.products?.nodes?.length) return null;
 
   return (
     <motion.div
-      className="mt-8 px-8"
+      className="mt-8 px-4 md:px-8"
       ref={sectionRef}
       initial={{opacity: 0}}
       animate={{opacity: isVisible ? 1 : 0}}
@@ -170,120 +91,28 @@ export function FeaturedCollections({
         </div>
       </div>
 
-
-      <div className="flex gap-4 mt-2 mb-6 border-b border-gray-200">
-        {collections.map((col, i) => (
-          <button
-            key={col.id}
-            onClick={() => setActiveTab(i)}
-            className={`relative pb-2 text-sm uppercase ${
-              i === activeTab
-                ? 'font-bold text-black'
-                : 'font-medium text-gray-500'
-            } transition-colors`}
-          >
-            {col.title}
-            {i === activeTab && (
-              <motion.div
-                className="absolute bottom-0 left-0 w-full h-0.5 bg-black"
-                layoutId="activeTab"
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 30,
-                  duration: 0.4,
-                }}
-              />
-            )}
-          </button>
-        ))}
-      </div>
-
+      {/* Product Grid */}
       <div className="relative">
-        <div className="md:hidden flex absolute top-1/2 -translate-y-1/2 left-0 right-0 z-20 px-2 pointer-events-none">
-          <div className="flex-1">
-            {canScrollLeft && (
-              <motion.button
-                onClick={handleScrollLeft}
-                className="w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow-md pointer-events-auto"
-                initial={{opacity: 0, x: -10}}
-                animate={{opacity: 1, x: 0}}
-                whileHover={{scale: 1.1}}
-                whileTap={{scale: 0.95}}
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15 19L8 12L15 5"
-                    stroke="black"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.button>
-            )}
-          </div>
-          <div className="flex-1 flex justify-end">
-            {canScrollRight && (
-              <motion.button
-                onClick={handleScrollRight}
-                className="w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow-md pointer-events-auto"
-                initial={{opacity: 0, x: 10}}
-                animate={{opacity: 1, x: 0}}
-                whileHover={{scale: 1.1}}
-                whileTap={{scale: 0.95}}
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 5L16 12L9 19"
-                    stroke="black"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.button>
-            )}
-          </div>
-        </div>
-
         <AnimatePresence mode="wait">
           <motion.div
-            key={active.id}
+            key={collection.id}
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
-            transition={{duration: 0.4}}
-            onAnimationComplete={checkScrollPosition}
-            ref={scrollRef}
-            className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-6 scroll-smooth"
-            aria-label="Product gallery"
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
+            transition={{duration: 0.5}}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"
+            onMouseLeave={() => setHoveredProduct(null)}
           >
-            {active.products.nodes.map((p) => (
+            {collection.products.nodes.map((p) => (
               <motion.div
                 key={p.id}
-                className="relative flex-none w-[80vw] md:w-auto snap-center"
-                initial={{opacity: 0}}
-                animate={{opacity: 1}}
-                transition={{duration: 0.6}}
-                onHoverStart={() => setHoveredProduct(p.id)}
-                onHoverEnd={() => setHoveredProduct(null)}
-                onTouchStart={() => setHoveredProduct(p.id)}
+                layoutId={p.id}
+                className="relative"
+                onMouseEnter={() => setHoveredProduct(p.id)}
+                onMouseLeave={() => setHoveredProduct(null)}
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.5}}
               >
                 <div className="block group">
                   <div className="aspect-[3/4] overflow-hidden mb-2 relative">
@@ -295,7 +124,7 @@ export function FeaturedCollections({
                       <Image
                         data={p.featuredImage}
                         aspectRatio="3/4"
-                        sizes="(min-width:1024px)25vw,(min-width:768px)33vw,80vw"
+                        sizes="(min-width:1024px)25vw,(min-width:768px)33vw,50vw"
                         className="w-full h-full object-cover"
                       />
                     </motion.div>

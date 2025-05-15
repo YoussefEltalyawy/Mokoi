@@ -8,7 +8,10 @@ import type {
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 import {HeroSection} from '~/components/HeroSection';
-import {FeaturedCollections} from '~/components/FeaturedCollections';
+import {
+  FeaturedCollections,
+  type CollectionWithProductsFragment,
+} from '~/components/FeaturedCollections';
 import {CollectionsShowcase} from '~/components/CollectionsShowcase';
 
 export const meta: MetaFunction = () => {
@@ -69,12 +72,12 @@ const FEATURED_COLLECTION_QUERY = `#graphql
   }
 ` as const;
 
-const FEATURED_COLLECTIONS_QUERY = `#graphql
-  fragment FeaturedCollectionWithProducts on Collection {
+const BEST_SELLERS_QUERY = `#graphql
+  fragment BestSellerCollection on Collection {
     id
     title
     handle
-    products(first: 4, sortKey: BEST_SELLING) {
+    products(first: 8, sortKey: BEST_SELLING) {
       nodes {
         id
         title
@@ -94,11 +97,11 @@ const FEATURED_COLLECTIONS_QUERY = `#graphql
       }
     }
   }
-  query FeaturedCollections($country: CountryCode, $language: LanguageCode)
+  query BestSellersCollection($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 2, sortKey: UPDATED_AT, reverse: true) {
+    collections(first: 1, query: "title:Best Sellers") {
       nodes {
-        ...FeaturedCollectionWithProducts
+        ...BestSellerCollection
       }
     }
   }
@@ -203,9 +206,9 @@ type CollectionWithImage = {
 };
 
 function loadDeferredData({context}: LoaderFunctionArgs) {
-  // Fetch featured collections with products
-  const featuredCollections = context.storefront
-    .query(FEATURED_COLLECTIONS_QUERY)
+  // Fetch best sellers collection with products
+  const bestSellersCollection = context.storefront
+    .query(BEST_SELLERS_QUERY)
     .catch((error) => {
       console.error(error);
       return null;
@@ -256,7 +259,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
     });
 
   return {
-    featuredCollections,
+    bestSellersCollection,
     recommendedProducts,
     newArrivalsProducts,
     collectionsWithImages,
@@ -270,17 +273,18 @@ export default function Homepage() {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Featured Collections (replacing Recommended Products) */}
+      {/* Best Sellers Collection */}
       <Suspense
         fallback={
-          <div className="my-16 px-4 text-center">Loading collections...</div>
+          <div className="my-16 px-4 text-center">Loading best sellers...</div>
         }
       >
-        <Await resolve={data.featuredCollections}>
+        <Await resolve={data.bestSellersCollection}>
           {(response: any) => {
             return (
               <FeaturedCollections
                 collections={response.collections.nodes as any}
+                isBestSellers={true}
               />
             );
           }}

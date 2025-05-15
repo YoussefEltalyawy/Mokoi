@@ -126,7 +126,7 @@ export function ProductForm({
 
                   let buttonStyle = {};
                   // Try to get color from swatch or name
-                  let colorValue =
+                  const colorValue =
                     swatch?.color ||
                     (/^(#|rgb|hsl|[a-zA-Z]+)$/.test(name) && name !== 'Default'
                       ? name

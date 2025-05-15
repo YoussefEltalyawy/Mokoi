@@ -324,7 +324,7 @@ export type FeaturedCollectionQuery = {
   };
 };
 
-export type FeaturedCollectionWithProductsFragment = Pick<
+export type BestSellerCollectionFragment = Pick<
   StorefrontAPI.Collection,
   'id' | 'title' | 'handle'
 > & {
@@ -345,12 +345,12 @@ export type FeaturedCollectionWithProductsFragment = Pick<
   };
 };
 
-export type FeaturedCollectionsQueryVariables = StorefrontAPI.Exact<{
+export type BestSellersCollectionQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
 }>;
 
-export type FeaturedCollectionsQuery = {
+export type BestSellersCollectionQuery = {
   collections: {
     nodes: Array<
       Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle'> & {
@@ -1339,9 +1339,9 @@ interface GeneratedQueryTypes {
     return: FeaturedCollectionQuery;
     variables: FeaturedCollectionQueryVariables;
   };
-  '#graphql\n  fragment FeaturedCollectionWithProducts on Collection {\n    id\n    title\n    handle\n    products(first: 4, sortKey: BEST_SELLING) {\n      nodes {\n        id\n        title\n        handle\n        featuredImage {\n          url\n          altText\n          width\n          height\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n  query FeaturedCollections($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 2, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...FeaturedCollectionWithProducts\n      }\n    }\n  }\n': {
-    return: FeaturedCollectionsQuery;
-    variables: FeaturedCollectionsQueryVariables;
+  '#graphql\n  fragment BestSellerCollection on Collection {\n    id\n    title\n    handle\n    products(first: 8, sortKey: BEST_SELLING) {\n      nodes {\n        id\n        title\n        handle\n        featuredImage {\n          url\n          altText\n          width\n          height\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n  query BestSellersCollection($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 1, query: "title:Best Sellers") {\n      nodes {\n        ...BestSellerCollection\n      }\n    }\n  }\n': {
+    return: BestSellersCollectionQuery;
+    variables: BestSellersCollectionQueryVariables;
   };
   '#graphql\n  fragment RecommendedProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 4, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...RecommendedProduct\n      }\n    }\n  }\n': {
     return: RecommendedProductsQuery;
