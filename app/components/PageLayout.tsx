@@ -8,6 +8,7 @@ import type {
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
+import {Watermark} from '~/components/Watermark';
 
 import {
   SEARCH_ENDPOINT,
@@ -39,6 +40,7 @@ export function PageLayout({
   return (
     <Aside.Provider>
       <div className="flex flex-col min-h-screen">
+        <Watermark />
         <CartAside cart={cart} />
         <SearchAside />
         <MobileMenuAside

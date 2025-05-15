@@ -3,7 +3,6 @@ import {Await, NavLink, useAsyncValue, useLocation} from '@remix-run/react';
 import {Image, useOptimisticCart} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import {GiHamburgerMenu} from 'react-icons/gi';
 import {Menu} from 'lucide-react';
 
 interface HeaderProps {
@@ -47,17 +46,18 @@ export function Header({
       >
         <div className="marquee-container">
           <p className="text-sm font-semibold animate-marquee">
-            Free shipping for orders above 1500 EGP - IN MOKO WE TRUST&quot;
-            &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for orders above 1500 EGP -
-            IN MOKO WE TRUST&quot; &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for
-            orders above 1500 EGP - IN MOKO WE TRUST&quot;
+            Free shipping for orders above 1400 EGP - IN MOKOI WE TRUST&quot;
+            &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for orders above 1400 EGP -
+            IN MOKOI WE TRUST&quot; &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for
+            orders above 1400 EGP - IN MOKOI WE TRUST&quot;
             &nbsp;&nbsp;&nbsp;&nbsp;
           </p>
         </div>
       </div>
 
-      <header className="flex items-center justify-between bg-white text-black w-full transition-colors duration-300 h-16">
-        <div className="flex items-center rounded-lg px-4 py-2">
+      <header className="relative flex items-center justify-between bg-white text-black w-full transition-colors duration-300 h-16">
+        {/* Left section - Hamburger and Text Logo */}
+        <div className="flex items-center px-4 py-2 flex-1">
           <HeaderMenuMobileToggle />
           <NavLink prefetch="intent" to="/" end>
             <Image
@@ -70,7 +70,23 @@ export function Header({
             />
           </NavLink>
         </div>
-        <div className="flex items-center gap-4 rounded-lg px-4 py-2">
+
+        {/* Center section - Symbol Logo */}
+        <div className="flex items-center justify-center flex-1">
+          <NavLink prefetch="intent" to="/" end>
+            <Image
+              src="/symbol-black.png"
+              className="h-8 lg:h-10 w-auto object-contain"
+              sizes="(min-width: 1024px) 120px, 80px"
+              width={40}
+              height={40}
+              alt="Symbol"
+            />
+          </NavLink>
+        </div>
+
+        {/* Right section - Search and Cart */}
+        <div className="flex items-center justify-end gap-4 px-4 py-2 flex-1">
           <SearchToggle />
           <CartToggle cart={cart} />
         </div>
@@ -83,7 +99,6 @@ function HeaderMenuMobileToggle() {
   const {open} = useAside();
   return (
     <button className="mr-2 text-black" onClick={() => open('mobile')}>
-      {/* <GiHamburgerMenu className="h-6 w-6" /> */}
       <Menu className="w-5 h-5 lg:w-7 lg:h-7" />
     </button>
   );
@@ -111,7 +126,10 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
 function CartBadge({count}: {count: number | null}) {
   const {open} = useAside();
   return (
-    <button className="text-black font-semibold" onClick={() => open('cart')}>
+    <button
+      className="text-black font-semibold whitespace-nowrap"
+      onClick={() => open('cart')}
+    >
       CART ({count === null ? 0 : count})
     </button>
   );
