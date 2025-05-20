@@ -8,7 +8,6 @@ import type {
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
-import {Watermark} from '~/components/Watermark';
 
 import {
   SEARCH_ENDPOINT,
@@ -40,7 +39,6 @@ export function PageLayout({
   return (
     <Aside.Provider>
       <div className="flex flex-col min-h-screen">
-        <Watermark />
         <CartAside cart={cart} />
         <SearchAside />
         <MobileMenuAside
@@ -172,22 +170,29 @@ function MobileMenuAside({
     header.menu &&
     header.shop.primaryDomain?.url && (
       <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-        <NavLink
-          prefetch="intent"
-          to="/account"
-          style={{marginTop: '1rem', fontWeight: 600}}
-        >
-          <Suspense fallback="Sign in">
-            <Await resolve={isLoggedIn} errorElement="Sign in">
-              {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-            </Await>
-          </Suspense>
-        </NavLink>
+        <div className="flex flex-col h-full">
+          <div className="flex-grow">
+            <HeaderMenu
+              menu={header.menu}
+              primaryDomainUrl={header.shop.primaryDomain.url}
+              publicStoreDomain={publicStoreDomain}
+            />
+          </div>
+          <div className="mt-auto">
+            <NavLink
+              prefetch="intent"
+              to="/account"
+              className="block w-full bg-black text-white text-center py-3 px-4 rounded-md hover:bg-black/90 transition-all duration-300 uppercase tracking-wider font-medium"
+              style={{display: 'block'}} /* Ensure button is visible */
+            >
+              <Suspense fallback="Sign in">
+                <Await resolve={isLoggedIn} errorElement="Sign in">
+                  {(isLoggedIn) => (isLoggedIn ? 'Manage account' : 'Sign in')}
+                </Await>
+              </Suspense>
+            </NavLink>
+          </div>
+        </div>
       </Aside>
     )
   );
