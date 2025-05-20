@@ -1,4 +1,5 @@
 import {Await, Link, NavLink, useLocation} from '@remix-run/react';
+import {User} from 'lucide-react';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
@@ -170,27 +171,29 @@ function MobileMenuAside({
     header.menu &&
     header.shop.primaryDomain?.url && (
       <Aside type="mobile" heading="MENU">
-        <div className="flex flex-col h-full">
-          <div className="flex-grow">
+        <div className="flex flex-col h-[90%]">
+          <div className="flex flex-col flex-grow">
             <HeaderMenu
               menu={header.menu}
               primaryDomainUrl={header.shop.primaryDomain.url}
               publicStoreDomain={publicStoreDomain}
             />
-          </div>
-          <div className="mt-auto">
-            <NavLink
-              prefetch="intent"
-              to="/account"
-              className="block w-full bg-black text-white text-center py-3 px-4 rounded-md hover:bg-black/90 transition-all duration-300 uppercase tracking-wider font-medium"
-              style={{display: 'block'}} /* Ensure button is visible */
-            >
-              <Suspense fallback="Sign in">
-                <Await resolve={isLoggedIn} errorElement="Sign in">
-                  {(isLoggedIn) => (isLoggedIn ? 'Manage account' : 'Sign in')}
-                </Await>
-              </Suspense>
-            </NavLink>
+            <div className="mt-auto p-4">
+              <NavLink
+                prefetch="intent"
+                to="/account"
+                className="flex items-center justify-center w-full bg-black text-white text-center py-3 px-4 rounded-md hover:bg-black/90 transition-all duration-300 uppercase tracking-wider font-medium"
+              >
+                <User className="w-5 h-5 mr-2" />
+                <Suspense fallback="Sign in">
+                  <Await resolve={isLoggedIn} errorElement="Sign in">
+                    {(isLoggedIn) =>
+                      isLoggedIn ? 'Manage account' : 'Sign in'
+                    }
+                  </Await>
+                </Suspense>
+              </NavLink>
+            </div>
           </div>
         </div>
       </Aside>
