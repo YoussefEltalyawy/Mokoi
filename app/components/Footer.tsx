@@ -27,16 +27,7 @@ export function Footer() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <div className="flex justify-center gap-6 md:gap-4 text-white">
               <a
-                href="https://facebook.com/mokocollections"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-brandBeige/70 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="https://www.instagram.com/mokocollections.eg/"
+                href="https://www.instagram.com/mokoicollections.eg/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-brandBeige/70 transition-colors"
@@ -48,10 +39,10 @@ export function Footer() {
 
             <div className="flex justify-center md:before:content-['•'] md:before:mx-2 md:before:text-brandBeige/50">
               <a
-                href="/pages/terms-conditions"
+                href="/pages/policy"
                 className="text-sm text-white hover:text-brandBeige/70 transition-colors underline-offset-4 hover:underline"
               >
-                Terms
+                Policy
               </a>
             </div>
           </div>

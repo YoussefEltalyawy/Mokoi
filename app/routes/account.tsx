@@ -39,12 +39,13 @@ export default function AccountLayout() {
 
   return (
     <div className="account">
-      <h1>{heading}</h1>
-      <br />
-      <AccountMenu />
-      <br />
-      <br />
-      <Outlet context={{customer}} />
+      <div className="account-container">
+        <h1>{heading}</h1>
+        <AccountMenu />
+        <div className="account-content">
+          <Outlet context={{customer}} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -64,19 +65,19 @@ function AccountMenu() {
   }
 
   return (
-    <nav role="navigation">
+    <nav role="navigation" className="account-menu">
       <NavLink to="/account/orders" style={isActiveStyle}>
-        Orders &nbsp;
+        Orders
       </NavLink>
-      &nbsp;|&nbsp;
+      <span className="nav-divider">|</span>
       <NavLink to="/account/profile" style={isActiveStyle}>
-        &nbsp; Profile &nbsp;
+        Profile
       </NavLink>
-      &nbsp;|&nbsp;
+      <span className="nav-divider">|</span>
       <NavLink to="/account/addresses" style={isActiveStyle}>
-        &nbsp; Addresses &nbsp;
+        Addresses
       </NavLink>
-      &nbsp;|&nbsp;
+      <span className="nav-divider">|</span>
       <Logout />
     </nav>
   );
@@ -85,7 +86,7 @@ function AccountMenu() {
 function Logout() {
   return (
     <Form className="account-logout" method="POST" action="/account/logout">
-      &nbsp;<button type="submit">Sign out</button>
+      <button type="submit">Sign out</button>
     </Form>
   );
 }

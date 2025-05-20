@@ -91,45 +91,48 @@ export default function AccountProfile() {
   return (
     <div className="account-profile">
       <h2>My profile</h2>
-      <br />
       <Form method="PUT">
         <legend>Personal information</legend>
         <fieldset>
-          <label htmlFor="firstName">First name</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            autoComplete="given-name"
-            placeholder="First name"
-            aria-label="First name"
-            defaultValue={customer.firstName ?? ''}
-            minLength={2}
-          />
-          <label htmlFor="lastName">Last name</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            autoComplete="family-name"
-            placeholder="Last name"
-            aria-label="Last name"
-            defaultValue={customer.lastName ?? ''}
-            minLength={2}
-          />
+          <div className="form-field">
+            <label htmlFor="firstName">First name</label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              autoComplete="given-name"
+              placeholder="First name"
+              aria-label="First name"
+              defaultValue={customer.firstName ?? ''}
+              minLength={2}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="lastName">Last name</label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Last name"
+              aria-label="Last name"
+              defaultValue={customer.lastName ?? ''}
+              minLength={2}
+            />
+          </div>
         </fieldset>
         {action?.error ? (
-          <p>
+          <p className="error-message">
             <mark>
               <small>{action.error}</small>
             </mark>
           </p>
-        ) : (
-          <br />
-        )}
-        <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Updating' : 'Update'}
-        </button>
+        ) : null}
+        <div className="form-actions">
+          <button type="submit" disabled={state !== 'idle'}>
+            {state !== 'idle' ? 'Updating...' : 'Update Profile'}
+          </button>
+        </div>
       </Form>
     </div>
   );

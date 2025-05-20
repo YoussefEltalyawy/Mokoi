@@ -62,10 +62,11 @@ export default function OrderRoute() {
   return (
     <div className="account-order">
       <h2>Order {order.name}</h2>
-      <p>Placed on {new Date(order.processedAt!).toDateString()}</p>
-      <br />
-      <div>
-        <table>
+      <p className="order-date">
+        Placed on {new Date(order.processedAt!).toDateString()}
+      </p>
+      <div className="order-details">
+        <table className="order-table">
           <thead>
             <tr>
               <th scope="col">Product</th>
@@ -173,15 +174,15 @@ function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
   return (
     <tr key={lineItem.id}>
       <td>
-        <div>
+        <div className="product-info">
           {lineItem?.image && (
-            <div>
+            <div className="product-image">
               <Image data={lineItem.image} width={96} height={96} />
             </div>
           )}
-          <div>
-            <p>{lineItem.title}</p>
-            <small>{lineItem.variantTitle}</small>
+          <div className="product-details">
+            <p className="product-title">{lineItem.title}</p>
+            <small className="product-variant">{lineItem.variantTitle}</small>
           </div>
         </div>
       </td>

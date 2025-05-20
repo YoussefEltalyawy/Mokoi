@@ -17,6 +17,7 @@ import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import marqueeStyles from '~/styles/marquee.css?url';
+import accountStyles from '~/styles/account.css?url';
 import {PageLayout} from './components/PageLayout';
 import ProjectStatusChecker from './components/ProjectAdminStatus';
 
@@ -157,6 +158,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
         <link rel="stylesheet" href={marqueeStyles}></link>
+        <link rel="stylesheet" href={accountStyles}></link>
         <Meta />
         <Links />
       </head>

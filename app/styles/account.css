@@ -1,0 +1,245 @@
+:root {
+  --account-padding: 1.5rem;
+  --account-border-radius: 4px;
+}
+
+/* Account Layout Styling */
+.account {
+  width: 100%;
+  background-color: #f9f9f9;
+  min-height: 50vh;
+}
+
+.account-container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: var(--account-padding);
+}
+
+.account-content {
+  background-color: var(--color-light);
+  border-radius: var(--account-border-radius);
+  padding: var(--account-padding);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.account h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+/* Account Navigation Menu */
+.account-menu {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.account-menu .nav-divider {
+  margin: 0 0.75rem;
+  color: #e5e5e5;
+}
+
+.account nav a {
+  text-decoration: none;
+  transition: all 0.2s;
+  padding: 0.5rem 0;
+}
+
+.account nav a:hover {
+  text-decoration: underline;
+}
+
+.account-logout {
+  display: inline-block;
+}
+
+/* Account Profile Form */
+.account-profile {
+  max-width: 600px;
+}
+
+.account-profile h2,
+.account-order h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.account-profile form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.account-profile fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.account-profile .form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-profile .form-actions {
+  margin-top: 1.5rem;
+}
+
+.account-profile .error-message {
+  color: #d82c0d;
+  margin: 0.5rem 0;
+}
+
+.account-profile legend {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.account-profile label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.account-profile input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e5e5e5;
+  border-radius: var(--account-border-radius);
+}
+
+.account-profile button,
+.account-order a,
+.account-logout button {
+  display: inline-block;
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--account-border-radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.account-profile button:hover,
+.account-order a:hover,
+.account-logout button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Order Details */
+.account-order {
+  width: 100%;
+}
+
+.account-order .order-date {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.account-order .order-details {
+  background-color: var(--color-light);
+  border-radius: var(--account-border-radius);
+  overflow: hidden;
+}
+
+.account-order .order-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.account-order th,
+.account-order td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.account-order th {
+  font-weight: 500;
+}
+
+.account-order tfoot th,
+.account-order tfoot td {
+  font-weight: bold;
+}
+
+.account-order tr:last-child th,
+.account-order tr:last-child td {
+  border-bottom: none;
+}
+
+.account-order div {
+  margin-bottom: 1.5rem;
+}
+
+.account-order h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.account-order address {
+  font-style: normal;
+  line-height: 1.5;
+}
+
+/* Product information in orders */
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.product-image {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--account-border-radius);
+  overflow: hidden;
+}
+
+.product-details {
+  flex-grow: 1;
+}
+
+.product-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.product-variant {
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .account-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .account-order .order-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .product-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
