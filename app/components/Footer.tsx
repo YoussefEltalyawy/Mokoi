@@ -16,7 +16,7 @@ export function Footer() {
                 href="https://www.instagram.com/talyawy.dev?igsh=ZmdiMHV1dm13bjE3&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white font-black hover:text-brandBeige/70 transition-colors underline-offset-4 hover:underline"
+                className="text-white hover:text-brandBeige/70 transition-colors underline-offset-4 hover:underline"
               >
                 TALYAWY.DEV
               </a>
