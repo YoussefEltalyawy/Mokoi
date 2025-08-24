@@ -11,14 +11,14 @@ export function Footer() {
           <div className="flex flex-col gap-2 md:flex-row md:items-center text-center md:text-left">
             <span className="text-sm">© {currentYear} MOKOI.</span>
             <span className="text-sm md:before:content-['•'] md:before:mx-2 md:before:text-brandBeige/50">
-              Developed by{' '}
+              SITE BY{' '}
               <a
-                href="https://talyawy.vercel.app/"
+                href="https://www.instagram.com/talyawy.dev?igsh=ZmdiMHV1dm13bjE3&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white font-black hover:text-brandBeige/70 transition-colors underline-offset-4 hover:underline"
               >
-                @talyawy.dev
+                TALYAWY.DEV
               </a>
             </span>
           </div>
