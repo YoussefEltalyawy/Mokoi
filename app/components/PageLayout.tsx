@@ -1,21 +1,21 @@
-import {Await, Link, NavLink, useLocation} from '@remix-run/react';
-import {User} from 'lucide-react';
-import {Suspense, useId} from 'react';
+import { Await, Link, NavLink, useLocation } from '@remix-run/react';
+import { User } from 'lucide-react';
+import { Suspense, useId } from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
-import {Footer} from '~/components/Footer';
-import {Header, HeaderMenu} from '~/components/Header';
+import { Aside } from '~/components/Aside';
+import { Footer } from '~/components/Footer';
+import { Header, HeaderMenu } from '~/components/Header';
 
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
-import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
-import {CartMain} from './cart/CartMain';
+import { SearchResultsPredictive } from '~/components/SearchResultsPredictive';
+import { CartMain } from './cart/CartMain';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -23,6 +23,7 @@ interface PageLayoutProps {
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  announcmentText?: string | null;
   children?: React.ReactNode;
 }
 
@@ -33,6 +34,7 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  announcmentText,
 }: PageLayoutProps) {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
@@ -53,6 +55,7 @@ export function PageLayout({
             cart={cart}
             isLoggedIn={isLoggedIn}
             publicStoreDomain={publicStoreDomain}
+            announcmentText={announcmentText ?? undefined}
           />
         )}
         <main className={`flex-grow ${!isHomePage ? 'pt-16' : ''}`}>
@@ -64,7 +67,7 @@ export function PageLayout({
   );
 }
 
-function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
+function CartAside({ cart }: { cart: PageLayoutProps['cart'] }) {
   return (
     <Aside type="cart" heading="CART">
       <Suspense fallback={<p>Loading cart ...</p>}>
@@ -83,7 +86,7 @@ function SearchAside() {
       <div className="predictive-search">
         <br />
         <SearchFormPredictive>
-          {({fetchResults, goToSearch, inputRef}) => (
+          {({ fetchResults, goToSearch, inputRef }) => (
             <>
               <input
                 name="q"
@@ -101,8 +104,8 @@ function SearchAside() {
         </SearchFormPredictive>
 
         <SearchResultsPredictive>
-          {({items, total, term, state, closeSearch}) => {
-            const {articles, collections, pages, products, queries} = items;
+          {({ items, total, term, state, closeSearch }) => {
+            const { articles, collections, pages, products, queries } = items;
 
             if (state === 'loading' && term.current) {
               return <div>Loading...</div>;

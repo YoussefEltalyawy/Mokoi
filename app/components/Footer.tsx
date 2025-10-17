@@ -1,5 +1,5 @@
-import {NavLink} from '@remix-run/react';
-import {Facebook, Instagram} from 'lucide-react';
+import { NavLink } from '@remix-run/react';
+import { Facebook, Instagram } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();

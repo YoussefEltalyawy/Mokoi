@@ -1,11 +1,11 @@
 'use client';
 
-import {Link} from '@remix-run/react';
-import {Image, Money} from '@shopify/hydrogen';
-import {useState, useRef, useEffect} from 'react';
-import type {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
-import {TextScramble} from '~/components/ui/text-scramble';
-import {motion, AnimatePresence} from 'framer-motion';
+import { Link } from '@remix-run/react';
+import { Image, Money } from '@shopify/hydrogen';
+import { useState, useRef, useEffect } from 'react';
+import type { CurrencyCode } from '@shopify/hydrogen/storefront-api-types';
+import { TextScramble } from '~/components/ui/text-scramble';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Product = {
   id: string;
@@ -37,9 +37,11 @@ export type CollectionWithProductsFragment = {
 export function FeaturedCollections({
   collections,
   isBestSellers = false,
+  marqueeText,
 }: {
   collections: CollectionWithProductsFragment[];
   isBestSellers?: boolean;
+  marqueeText?: string;
 }) {
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -54,7 +56,7 @@ export function FeaturedCollections({
           observer.disconnect();
         }
       },
-      {threshold: 0.1},
+      { threshold: 0.1 },
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
@@ -71,9 +73,9 @@ export function FeaturedCollections({
     <motion.div
       className="mt-8 px-4 md:px-8"
       ref={sectionRef}
-      initial={{opacity: 0}}
-      animate={{opacity: isVisible ? 1 : 0}}
-      transition={{duration: 0.8}}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{ duration: 0.8 }}
     >
       {/* Black bar with marquee text */}
       <div className="w-full py-3 overflow-hidden mb-4">
@@ -85,7 +87,7 @@ export function FeaturedCollections({
                 key={i}
                 className="text-black uppercase font-bold mx-2 text-6xl md:text-8xl"
               >
-                BEST SELLERS
+                {marqueeText ?? 'BEST SELLERS'}
               </span>
             ))}
         </div>
@@ -96,10 +98,10 @@ export function FeaturedCollections({
         <AnimatePresence mode="wait">
           <motion.div
             key={collection.id}
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            exit={{opacity: 0}}
-            transition={{duration: 0.5}}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"
             onMouseLeave={() => setHoveredProduct(null)}
           >
@@ -110,15 +112,15 @@ export function FeaturedCollections({
                 className="relative"
                 onMouseEnter={() => setHoveredProduct(p.id)}
                 onMouseLeave={() => setHoveredProduct(null)}
-                initial={{opacity: 0, y: 20}}
-                animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.5}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
                 <div className="block group">
                   <div className="aspect-[3/4] overflow-hidden mb-2 relative">
                     <motion.div
-                      animate={{scale: hoveredProduct === p.id ? 1.05 : 1}}
-                      transition={{duration: 0.5}}
+                      animate={{ scale: hoveredProduct === p.id ? 1.05 : 1 }}
+                      transition={{ duration: 0.5 }}
                       className="h-full w-full"
                     >
                       <Image
@@ -130,18 +132,18 @@ export function FeaturedCollections({
                     </motion.div>
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 flex items-end justify-center pb-6"
-                      initial={{opacity: 0}}
-                      animate={{opacity: hoveredProduct === p.id ? 1 : 0}}
-                      transition={{duration: 0.3}}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: hoveredProduct === p.id ? 1 : 0 }}
+                      transition={{ duration: 0.3 }}
                     >
                       <motion.div
                         className="px-4 py-2 border border-white text-white rounded-sm"
-                        initial={{y: 20, opacity: 0}}
+                        initial={{ y: 20, opacity: 0 }}
                         animate={{
                           y: hoveredProduct === p.id ? 0 : 20,
                           opacity: hoveredProduct === p.id ? 1 : 0,
                         }}
-                        transition={{duration: 0.3, delay: 0.1}}
+                        transition={{ duration: 0.3, delay: 0.1 }}
                       >
                         {hoveredProduct === p.id && (
                           <TextScramble
@@ -172,9 +174,9 @@ export function FeaturedCollections({
                     </div>
                     <motion.div
                       className="absolute -bottom-1 left-0 h-0.5 bg-black w-0 origin-left"
-                      initial={{width: 0}}
-                      whileHover={{width: '100%'}}
-                      transition={{duration: 0.3}}
+                      initial={{ width: 0 }}
+                      whileHover={{ width: '100%' }}
+                      transition={{ duration: 0.3 }}
                     />
                   </div>
                   <Link

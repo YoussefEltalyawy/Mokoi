@@ -1,21 +1,21 @@
-import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
-import {Suspense} from 'react';
-import {Image, Money} from '@shopify/hydrogen';
+import { type LoaderFunctionArgs } from '@shopify/remix-oxygen';
+import { Await, useLoaderData, Link, type MetaFunction } from '@remix-run/react';
+import { Suspense } from 'react';
+import { Image, Money } from '@shopify/hydrogen';
 import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import {ProductItem} from '~/components/ProductItem';
-import {HeroSection} from '~/components/HeroSection';
+import { ProductItem } from '~/components/ProductItem';
+import { HeroSection } from '~/components/HeroSection';
 import {
   FeaturedCollections,
   type CollectionWithProductsFragment,
 } from '~/components/FeaturedCollections';
-import {CollectionsShowcase} from '~/components/CollectionsShowcase';
+import { CollectionsShowcase } from '~/components/CollectionsShowcase';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'MOKOI | Home'}];
+  return [{ title: 'MOKOI | Home' }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -25,21 +25,102 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData};
+  return { ...deferredData, ...criticalData };
 }
 
 /**
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [{collections}] = await Promise.all([
+async function loadCriticalData({ context }: LoaderFunctionArgs) {
+  const [featuredCollectionsResponse, homeMetaobjectResponse] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
-    // Add other queries here, so that they are loaded in parallel
+    context.storefront.query(HOME_METAOBJECT_QUERY, {
+      variables: { handle: 'in-mokoi-we-trust' },
+    }).catch((error) => {
+      console.error(error);
+      return null;
+    }),
   ]);
 
+  const featuredCollection = featuredCollectionsResponse.collections.nodes[0];
+
+  // Extract metaobject fields safely
+  const metaobjectNode = (homeMetaobjectResponse as any)?.metaobject ?? null;
+  // Debug log removed per user request
+  const fieldsArray: Array<{
+    key: string;
+    type: string;
+    value: string | null;
+    reference?: any;
+  }> = metaobjectNode?.fields ?? [];
+
+  const fieldMap = new Map<string, any>();
+  for (const f of fieldsArray) {
+    fieldMap.set(f.key, f);
+  }
+
+  const heroVideoField = fieldMap.get('hero_video');
+  const heroTextField = fieldMap.get('hero_text');
+  const shopNowCollectionField = fieldMap.get('shop_now_collection');
+  const bestSellersTextField = fieldMap.get('best_sellers_text');
+  const shopByCollectionMarqueeField = fieldMap.get('shop_by_collection_marquee');
+
+  // Normalize hero media (video or image)
+  let heroMedia: null | {
+    kind: 'video' | 'image';
+    video?: { url: string | null; previewImageUrl?: string | null };
+    image?: { url: string | null; altText?: string | null; width?: number | null; height?: number | null };
+  } = null;
+
+  if (heroVideoField?.reference) {
+    const ref = heroVideoField.reference;
+    if (ref.__typename === 'Video') {
+      const firstSource = ref.sources?.[0] ?? null;
+      heroMedia = {
+        kind: 'video',
+        video: {
+          url: firstSource?.url ?? null,
+          previewImageUrl: ref.previewImage?.url ?? null,
+        },
+      };
+    } else if (ref.__typename === 'MediaImage' || ref.__typename === 'Image') {
+      heroMedia = {
+        kind: 'image',
+        image: {
+          url: ref.image?.url ?? ref.url ?? null,
+          altText: ref.image?.altText ?? ref.altText ?? null,
+          width: ref.image?.width ?? ref.width ?? null,
+          height: ref.image?.height ?? ref.height ?? null,
+        },
+      };
+    }
+  }
+
+  // Normalize collection handle from reference
+  let shopNowCollectionHandle: string | null = null;
+  if (shopNowCollectionField?.reference && shopNowCollectionField.reference.__typename === 'Collection') {
+    shopNowCollectionHandle = shopNowCollectionField.reference.handle ?? null;
+  } else if (typeof shopNowCollectionField?.value === 'string') {
+    // Fallback if field is a plain string handle
+    shopNowCollectionHandle = shopNowCollectionField.value;
+  }
+
+  const homeContent = {
+    heroMedia,
+    heroText: typeof heroTextField?.value === 'string' ? heroTextField.value : null,
+    shopNowCollectionHandle,
+    bestSellersText:
+      typeof bestSellersTextField?.value === 'string' ? bestSellersTextField.value : 'BEST SELLERS',
+    shopByCollectionMarquee:
+      typeof shopByCollectionMarqueeField?.value === 'string'
+        ? shopByCollectionMarqueeField.value
+        : 'SHOP BY COLLECTION',
+  };
+
   return {
-    featuredCollection: collections.nodes[0],
+    featuredCollection,
+    homeContent,
   };
 }
 
@@ -166,8 +247,8 @@ const NEW_ARRIVALS_QUERY = `#graphql
   }
 ` as const;
 
-const COLLECTIONS_WITH_IMAGES_QUERY = `#graphql
-  fragment CollectionWithImage on Collection {
+const MENU_COLLECTIONS_QUERY = `#graphql
+  fragment CollectionForMenu on Collection {
     id
     title
     handle
@@ -180,11 +261,51 @@ const COLLECTIONS_WITH_IMAGES_QUERY = `#graphql
     }
     updatedAt
   }
-  query CollectionsWithImages($country: CountryCode, $language: LanguageCode)
+  query MenuCollections(
+    $handle: String!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    menu(handle: $handle) {
+      items {
+        id
+        resource {
+          ... on Collection {
+            ...CollectionForMenu
+          }
+        }
+      }
+    }
+  }
+` as const;
+
+const HOME_METAOBJECT_QUERY = `#graphql
+  query HomeMetaobject($handle: String!, $country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 30, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...CollectionWithImage
+    metaobject(handle: {type: "home_page", handle: $handle}) {
+      id
+      handle
+      fields {
+        key
+        type
+        value
+        reference {
+          __typename
+          ... on Collection {
+            id
+            handle
+            title
+          }
+          ... on Video {
+            id
+            previewImage { url }
+            sources { url }
+          }
+          ... on MediaImage {
+            id
+            image { url altText width height }
+          }
+        }
       }
     }
   }
@@ -205,7 +326,7 @@ type CollectionWithImage = {
   updatedAt: string;
 };
 
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({ context }: LoaderFunctionArgs) {
   // Fetch best sellers collection with products
   const bestSellersCollection = context.storefront
     .query(BEST_SELLERS_QUERY)
@@ -230,28 +351,22 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
       return null;
     });
 
-  // Fetch collections with images for the secondary showcase
-  const collectionsWithImages = context.storefront
-    .query(COLLECTIONS_WITH_IMAGES_QUERY)
+  // Fetch collections from the home screen menu by handle
+  const menuCollections = context.storefront
+    .query(MENU_COLLECTIONS_QUERY, {
+      variables: { handle: 'home-screen-shop-by-collection' },
+    })
     .then((response) => {
-      // Filter to only include collections with images and sort by updatedAt
-      if (response?.collections?.nodes) {
-        const filtered = response.collections.nodes
-          .filter((collection) => collection.image?.url)
-          .sort((a, b) => {
-            // Sort by updatedAt, newest first
-            return (
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-            );
-          });
+      const items = response?.menu?.items ?? [];
+      const collections = items
+        .map((item: any) => item?.resource)
+        .filter((resource: any) => Boolean(resource && resource.image?.url));
 
-        return {
-          collections: {
-            nodes: filtered,
-          },
-        };
-      }
-      return response;
+      return {
+        collections: {
+          nodes: collections,
+        },
+      };
     })
     .catch((error) => {
       console.error(error);
@@ -262,7 +377,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
     bestSellersCollection,
     recommendedProducts,
     newArrivalsProducts,
-    collectionsWithImages,
+    menuCollections,
   };
 }
 
@@ -271,7 +386,11 @@ export default function Homepage() {
   return (
     <div className="home">
       {/* Hero Section */}
-      <HeroSection />
+      <HeroSection
+        heroMedia={data.homeContent?.heroMedia}
+        heroText={data.homeContent?.heroText ?? undefined}
+        shopNowCollectionHandle={data.homeContent?.shopNowCollectionHandle ?? undefined}
+      />
 
       {/* Best Sellers Collection */}
       <Suspense
@@ -285,6 +404,7 @@ export default function Homepage() {
               <FeaturedCollections
                 collections={response.collections.nodes as any}
                 isBestSellers={true}
+                marqueeText={data.homeContent?.bestSellersText}
               />
             );
           }}
@@ -299,7 +419,7 @@ export default function Homepage() {
           </div>
         }
       >
-        <Await resolve={data.collectionsWithImages}>
+        <Await resolve={data.menuCollections}>
           {(response: any) => {
             if (!response?.collections?.nodes?.length) {
               return null;
@@ -307,7 +427,10 @@ export default function Homepage() {
 
             return (
               <div className="w-full overflow-hidden">
-                <CollectionsShowcase collections={response.collections.nodes} />
+                <CollectionsShowcase
+                  collections={response.collections.nodes}
+                  marqueeText={data.homeContent?.shopByCollectionMarquee}
+                />
               </div>
             );
           }}

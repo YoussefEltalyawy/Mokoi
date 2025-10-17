@@ -1,10 +1,10 @@
 'use client';
 
-import {Link} from '@remix-run/react';
-import {Image} from '@shopify/hydrogen';
-import {useState, useEffect, useRef} from 'react';
-import {motion} from 'framer-motion';
-import {TextScramble} from '~/components/ui/text-scramble';
+import { Link } from '@remix-run/react';
+import { Image } from '@shopify/hydrogen';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { TextScramble } from '~/components/ui/text-scramble';
 
 type Collection = {
   id: string;
@@ -21,8 +21,10 @@ type Collection = {
 
 export function CollectionsShowcase({
   collections,
+  marqueeText,
 }: {
   collections: Collection[];
+  marqueeText?: string;
 }) {
   // If there are no collections, don't render the component
   if (!collections || collections.length === 0) return null;
@@ -36,7 +38,7 @@ export function CollectionsShowcase({
             .fill(0)
             .map((_, i) => (
               <span key={i} className="text-white uppercase font-bold mx-2">
-                SHOP BY COLLECTION
+                {marqueeText ?? 'SHOP BY COLLECTION'}
                 <span className="mx-2 opacity-60">•</span>
               </span>
             ))}
@@ -75,8 +77,8 @@ export function CollectionsShowcase({
                     duration={1.8}
                   />
                   <motion.div
-                    whileHover={{scale: 1.05}}
-                    transition={{duration: 0.2}}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
                     className="text-white text-sm uppercase tracking-wide font-bold order-2 hover:opacity-80 transition-opacity flex items-center"
                   >
                     <ObservableTextScramble

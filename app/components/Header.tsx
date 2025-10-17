@@ -1,15 +1,16 @@
-import {Suspense, useEffect, useState} from 'react';
-import {Await, NavLink, useAsyncValue, useLocation} from '@remix-run/react';
-import {Image, useOptimisticCart} from '@shopify/hydrogen';
-import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
-import {useAside} from '~/components/Aside';
-import {Menu} from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
+import { Await, NavLink, useAsyncValue, useLocation } from '@remix-run/react';
+import { Image, useOptimisticCart } from '@shopify/hydrogen';
+import type { HeaderQuery, CartApiQueryFragment } from 'storefrontapi.generated';
+import { useAside } from '~/components/Aside';
+import { Menu } from 'lucide-react';
 
 interface HeaderProps {
   header: HeaderQuery;
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  announcmentText?: string;
 }
 
 export function Header({
@@ -17,6 +18,7 @@ export function Header({
   isLoggedIn,
   cart,
   publicStoreDomain,
+  announcmentText,
 }: HeaderProps) {
   const [hasScrolled, setHasScrolled] = useState(false);
   const location = useLocation();
@@ -46,10 +48,9 @@ export function Header({
       >
         <div className="marquee-container">
           <p className="text-sm font-semibold animate-marquee">
-            Free shipping for orders above 1400 EGP - IN MOKOI WE TRUST&quot;
-            &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for orders above 1400 EGP -
-            IN MOKOI WE TRUST&quot; &nbsp;&nbsp;&nbsp;&nbsp; Free shipping for
-            orders above 1400 EGP - IN MOKOI WE TRUST&quot;
+            {announcmentText ?? 'Free shipping for orders above 1400 EGP - IN MOKOI WE TRUST'}
+            &nbsp;&nbsp;&nbsp;&nbsp; {announcmentText ?? 'Free shipping for orders above 1400 EGP - IN MOKOI WE TRUST'}
+            &nbsp;&nbsp;&nbsp;&nbsp; {announcmentText ?? 'Free shipping for orders above 1400 EGP - IN MOKOI WE TRUST'}
             &nbsp;&nbsp;&nbsp;&nbsp;
           </p>
         </div>
@@ -96,7 +97,7 @@ export function Header({
 }
 
 function HeaderMenuMobileToggle() {
-  const {open} = useAside();
+  const { open } = useAside();
   return (
     <button className="mr-2 text-black" onClick={() => open('mobile')}>
       <Menu className="w-5 h-5 lg:w-7 lg:h-7" />
@@ -105,7 +106,7 @@ function HeaderMenuMobileToggle() {
 }
 
 function SearchToggle() {
-  const {open} = useAside();
+  const { open } = useAside();
   return (
     <button className="text-black font-semibold" onClick={() => open('search')}>
       SEARCH
@@ -113,7 +114,7 @@ function SearchToggle() {
   );
 }
 
-function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+function CartToggle({ cart }: Pick<HeaderProps, 'cart'>) {
   return (
     <Suspense fallback={<CartBadge count={null} />}>
       <Await resolve={cart}>
@@ -123,8 +124,8 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
   );
 }
 
-function CartBadge({count}: {count: number | null}) {
-  const {open} = useAside();
+function CartBadge({ count }: { count: number | null }) {
+  const { open } = useAside();
   return (
     <button
       className="text-black font-semibold whitespace-nowrap"
@@ -150,15 +151,15 @@ export function HeaderMenu({
   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
   publicStoreDomain: HeaderProps['publicStoreDomain'];
 }) {
-  const {close} = useAside();
+  const { close } = useAside();
   return (
     <nav className="flex flex-col gap-4 p-4">
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
         const url =
           item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
+            item.url.includes(publicStoreDomain) ||
+            item.url.includes(primaryDomainUrl)
             ? new URL(item.url).pathname
             : item.url;
         return (
