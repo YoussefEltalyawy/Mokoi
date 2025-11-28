@@ -76,11 +76,20 @@ async function loadCriticalData({ context }: LoaderFunctionArgs) {
   if (heroVideoField?.reference) {
     const ref = heroVideoField.reference;
     if (ref.__typename === 'Video') {
-      const firstSource = ref.sources?.[0] ?? null;
+      const sources = ref.sources ?? [];
+      const mp4Source = sources.find((s: any) => s.mimeType === 'video/mp4');
+      const selectedSource = mp4Source ?? sources[0] ?? null;
+
+      if (selectedSource) {
+        console.log('Selected hero video source:', selectedSource.url, 'Mime:', selectedSource.mimeType);
+      } else {
+        console.warn('No suitable hero video source found');
+      }
+
       heroMedia = {
         kind: 'video',
         video: {
-          url: firstSource?.url ?? null,
+          url: selectedSource?.url ?? null,
           previewImageUrl: ref.previewImage?.url ?? null,
         },
       };
@@ -299,7 +308,7 @@ const HOME_METAOBJECT_QUERY = `#graphql
           ... on Video {
             id
             previewImage { url }
-            sources { url }
+            sources { url mimeType }
           }
           ... on MediaImage {
             id

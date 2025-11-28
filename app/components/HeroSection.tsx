@@ -61,6 +61,7 @@ export function HeroSection({
           playsInline
           preload="auto"
           style={{ display: 'block' }}
+          onError={(e) => console.error('Hero video playback error:', e.currentTarget.error, e.currentTarget.src)}
         />
       ) : heroMedia?.kind === 'image' && heroMedia.image?.url ? (
         <img
