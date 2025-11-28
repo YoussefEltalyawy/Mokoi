@@ -1,29 +1,32 @@
-import {Link, useNavigate} from '@remix-run/react';
-import {type MappedProductOptions} from '@shopify/hydrogen';
+import { Link, useNavigate } from '@remix-run/react';
+import { type MappedProductOptions } from '@shopify/hydrogen';
 import type {
   Maybe,
   ProductOptionValueSwatch,
 } from '@shopify/hydrogen/storefront-api-types';
-import {motion, AnimatePresence} from 'framer-motion';
-import {useState, useEffect} from 'react';
-import {TextScramble} from '~/components/ui/text-scramble'; // Assuming this component exists
-import {AddToCartButton} from './AddToCartButton'; // Using the updated AddToCartButton
-import {useAside} from './Aside'; // Assuming this hook exists
-import type {ProductFragment} from 'storefrontapi.generated'; // Assuming this type exists
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { TextScramble } from '~/components/ui/text-scramble'; // Assuming this component exists
+import { AddToCartButton } from './AddToCartButton'; // Using the updated AddToCartButton
+import { useAside } from './Aside'; // Assuming this hook exists
+import type { ProductFragment } from 'storefrontapi.generated'; // Assuming this type exists
 
 export function ProductForm({
   productOptions,
   selectedVariant,
+  sizeChartUrl,
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
+  sizeChartUrl?: string;
 }) {
   const navigate = useNavigate();
-  const {open} = useAside(); // Context or hook to open a side panel (e.g., cart)
+  const { open } = useAside(); // Context or hook to open a side panel (e.g., cart)
   // Removed addingToCart state as AddToCartButton now handles its internal loading state
   const [scaleButton, setScaleButton] = useState(false); // For AddToCartButton mount animation
   const [activeVariant, setActiveVariant] = useState<string | null>(null); // For option button click animation
   const [scrambleText, setScrambleText] = useState(false); // For AddToCartButton text animation
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   // Animation for AddToCartButton on mount
   useEffect(() => {
@@ -53,9 +56,9 @@ export function ProductForm({
     <div className="space-y-8 font-poppins">
       {/* Product options selection */}
       <motion.div
-        initial={{opacity: 0, y: 20}}
-        animate={{opacity: 1, y: 0}}
-        transition={{duration: 0.6}}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
         className="space-y-8"
       >
         {productOptions.map((option, idx) => {
@@ -71,46 +74,58 @@ export function ProductForm({
             <motion.div
               key={option.name}
               className="space-y-4"
-              initial={{opacity: 0, y: 15}}
-              animate={{opacity: 1, y: 0}}
-              transition={{duration: 0.5, delay: 0.1 * idx}}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 * idx }}
             >
               <div className="flex items-center justify-between">
                 {/* Option name */}
                 <motion.h5
                   className="text-sm font-medium text-black uppercase tracking-wide"
-                  initial={{opacity: 0, x: -20}}
-                  animate={{opacity: 1, x: 0}}
-                  transition={{duration: 0.5, delay: 0.2 + 0.1 * idx}}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 + 0.1 * idx }}
                 >
                   {option.name}
                 </motion.h5>
 
-                {/* Available options count */}
-                <motion.span
-                  className="text-xs text-gray-500"
-                  initial={{opacity: 0}}
-                  animate={{opacity: 1}}
-                  transition={{duration: 0.5, delay: 0.3 + 0.1 * idx}}
-                >
-                  {option.optionValues.filter((v) => v.available).length}{' '}
-                  {option.optionValues.filter((v) => v.available).length === 1
-                    ? 'option'
-                    : 'options'}{' '}
-                  available
-                </motion.span>
+                {/* Available options count or Size Chart button */}
+                {(!isColorOption && option.name.toLowerCase() === 'size' && sizeChartUrl) ? (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 + 0.1 * idx }}
+                    type="button"
+                    onClick={() => setShowSizeChart(true)}
+                    className="text-sm font-medium underline text-black hover:text-gray-600 transition-colors"
+                  >
+                    Size Chart
+                  </motion.button>
+                ) : (
+                  <motion.span
+                    className="text-xs text-gray-500"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 + 0.1 * idx }}
+                  >
+                    {option.optionValues.filter((v) => v.available).length}{' '}
+                    {option.optionValues.filter((v) => v.available).length === 1
+                      ? 'option'
+                      : 'options'}{' '}
+                    available
+                  </motion.span>
+                )}
               </div>
 
               {/* Option values grid */}
               <motion.div
-                className={`grid ${
-                  isColorOption
+                className={`grid ${isColorOption
                     ? 'grid-cols-5 sm:grid-cols-6' // More columns for colors
                     : 'grid-cols-3' // Consistent 3 columns for sizes/other options
-                } gap-3`}
-                initial={{opacity: 0}}
-                animate={{opacity: 1}}
-                transition={{duration: 0.6, delay: 0.2}}
+                  } gap-3`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
               >
                 {option.optionValues.map((value) => {
                   const {
@@ -138,7 +153,7 @@ export function ProductForm({
                     colorValue?.toLowerCase() === '#ffffff' ||
                     colorValue?.toLowerCase() === 'white' ||
                     colorValue?.replace(/\s/g, '').toLowerCase() ===
-                      'rgb(255,255,255)';
+                    'rgb(255,255,255)';
 
                   if (isColorOption && colorValue) {
                     buttonStyle = {
@@ -152,28 +167,25 @@ export function ProductForm({
                     flex
                     items-center 
                     justify-center
-                    ${
-                      isColorOption
-                        ? 'w-8 h-8 rounded-full' // MODIFIED: Smaller color circles
-                        : 'py-3 px-2 rounded-lg' // Padding for text options
+                    ${isColorOption
+                      ? 'w-8 h-8 rounded-full' // MODIFIED: Smaller color circles
+                      : 'py-3 px-2 rounded-lg' // Padding for text options
                     }
                     overflow-hidden
                     relative
                     transition-all
                     duration-300
-                    ${
-                      !available
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:scale-105'
+                    ${!available
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:scale-105'
                     }
-                    ${
-                      selected
-                        ? isColorOption
-                          ? `ring-2 ${isWhiteColor ? 'ring-gray-400' : 'ring-black'} ring-offset-2` // Ring for selected color
-                          : 'bg-black text-white' // Style for selected text option
-                        : isColorOption
-                          ? `ring-1 ${isWhiteColor ? 'ring-gray-300' : 'ring-gray-200'} ring-offset-1` // Default ring for color
-                          : 'bg-gray-100 text-black hover:bg-gray-200' // Style for unselected text option
+                    ${selected
+                      ? isColorOption
+                        ? `ring-2 ${isWhiteColor ? 'ring-gray-400' : 'ring-black'} ring-offset-2` // Ring for selected color
+                        : 'bg-black text-white' // Style for selected text option
+                      : isColorOption
+                        ? `ring-1 ${isWhiteColor ? 'ring-gray-300' : 'ring-gray-200'} ring-offset-1` // Default ring for color
+                        : 'bg-gray-100 text-black hover:bg-gray-200' // Style for unselected text option
                     }
                   `;
 
@@ -189,9 +201,9 @@ export function ProductForm({
                             {selected && (
                               <motion.div
                                 className="absolute inset-0 flex items-center justify-center z-10"
-                                initial={{opacity: 0, scale: 0.5}}
-                                animate={{opacity: 1, scale: 1}}
-                                exit={{opacity: 0, scale: 0.5}}
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
                               >
                                 <div
                                   className={`w-2 h-2 rounded-full ${isWhiteColor ? 'bg-black' : 'bg-white'} shadow-md`}
@@ -212,9 +224,9 @@ export function ProductForm({
                           {selected && !isColorOption && (
                             <motion.div
                               className="absolute -bottom-1 left-0 h-0.5 bg-white w-full" // Use w-full for underline
-                              initial={{width: '0%'}}
-                              animate={{width: '100%'}}
-                              transition={{duration: 0.3, delay: 0.1}}
+                              initial={{ width: '0%' }}
+                              animate={{ width: '100%' }}
+                              transition={{ duration: 0.3, delay: 0.1 }}
                             />
                           )}
                         </div>
@@ -273,8 +285,8 @@ export function ProductForm({
                       }}
                       style={buttonStyle}
                       aria-label={`${name}${!available ? ' (sold out)' : ''}`}
-                      whileHover={available ? {scale: 1.05} : {}}
-                      whileTap={available ? {scale: 0.95} : {}}
+                      whileHover={available ? { scale: 1.05 } : {}}
+                      whileTap={available ? { scale: 0.95 } : {}}
                       animate={{
                         scale: activeVariant === name ? [1, 1.1, 1] : 1, // Pop animation on click
                       }}
@@ -295,7 +307,7 @@ export function ProductForm({
 
       {/* Add to Cart Button Section */}
       <motion.div
-        initial={{opacity: 0, y: 20}}
+        initial={{ opacity: 0, y: 20 }}
         animate={{
           opacity: 1,
           y: 0,
@@ -316,13 +328,13 @@ export function ProductForm({
           lines={
             selectedVariant
               ? [
-                  {
-                    merchandiseId: selectedVariant.id,
-                    quantity: 1,
-                    // Remove selectedVariant field; attributes are optional
-                    attributes: [{key: 'someKey', value: 'someValue'}], // Optional
-                  },
-                ]
+                {
+                  merchandiseId: selectedVariant.id,
+                  quantity: 1,
+                  // Remove selectedVariant field; attributes are optional
+                  attributes: [{ key: 'someKey', value: 'someValue' }], // Optional
+                },
+              ]
               : []
           }
         >
@@ -337,6 +349,35 @@ export function ProductForm({
           )}
         </AddToCartButton>
       </motion.div>
+
+      {/* Size Chart Modal */}
+      <AnimatePresence>
+        {showSizeChart && sizeChartUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setShowSizeChart(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white p-2 rounded-lg max-w-3xl max-h-[90vh] overflow-auto relative shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowSizeChart(false)}
+                className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white text-black rounded-full shadow-md transition-all z-10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+              <img src={sizeChartUrl} alt="Size Chart" className="w-full h-auto rounded-md" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Await, useLoaderData, type MetaFunction} from '@remix-run/react';
+import { defer, type LoaderFunctionArgs } from '@shopify/remix-oxygen';
+import { Await, useLoaderData, type MetaFunction } from '@remix-run/react';
 import {
   getSelectedProductOptions,
   Analytics,
@@ -9,18 +9,18 @@ import {
   useSelectedOptionInUrlParam,
   type MappedProductOptions,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
+import { ProductPrice } from '~/components/ProductPrice';
 import ProductImage from '~/components/ProductImage';
-import {ProductForm} from '~/components/ProductForm';
-import {Suspense} from 'react';
+import { ProductForm } from '~/components/ProductForm';
+import { Suspense } from 'react';
 import type {
   ProductFragment,
   ProductVariantFragment,
 } from 'storefrontapi.generated';
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
-    {title: `MOKOI | ${data?.product.title ?? ''}`},
+    { title: `MOKOI | ${data?.product.title ?? ''}` },
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
@@ -31,7 +31,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-  return defer({...deferredData, ...criticalData});
+  return defer({ ...deferredData, ...criticalData });
 }
 
 async function loadCriticalData({
@@ -39,32 +39,32 @@ async function loadCriticalData({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const {handle} = params;
-  const {storefront} = context;
+  const { handle } = params;
+  const { storefront } = context;
 
   if (!handle) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const [{ product }] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+      variables: { handle, selectedOptions: getSelectedProductOptions(request) },
     }),
   ]);
 
   if (!product?.id) {
-    throw new Response(null, {status: 404});
+    throw new Response(null, { status: 404 });
   }
 
-  return {product};
+  return { product };
 }
 
-function loadDeferredData({context, params}: LoaderFunctionArgs) {
+function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   return {};
 }
 
 export default function Product() {
-  const {product} = useLoaderData<{product: ProductFragment}>();
+  const { product } = useLoaderData<{ product: ProductFragment }>();
 
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
@@ -86,11 +86,11 @@ export default function Product() {
   // Create a map from color to image using firstSelectableVariant
   const colorToImage = colorOption
     ? new Map<string, ProductVariantFragment['image']>(
-        colorOption.optionValues.map((value) => [
-          value.name,
-          value.firstSelectableVariant?.image || null,
-        ]),
-      )
+      colorOption.optionValues.map((value) => [
+        value.name,
+        value.firstSelectableVariant?.image || null,
+      ]),
+    )
     : new Map<string, ProductVariantFragment['image']>();
 
   // Get the selected color from the variant's options
@@ -137,11 +137,12 @@ export default function Product() {
             <ProductForm
               productOptions={productOptions}
               selectedVariant={selectedVariant}
+              sizeChartUrl={product.metafield?.reference?.image?.url}
             />
 
             <div className="font-poppins text-black/90 max-w-none">
               <div
-                dangerouslySetInnerHTML={{__html: product.descriptionHtml}}
+                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
               ></div>
             </div>
           </div>
@@ -213,6 +214,15 @@ const PRODUCT_FRAGMENT = `#graphql
     description
     encodedVariantExistence
     encodedVariantAvailability
+    metafield(namespace: "custom", key: "size_chart") {
+      reference {
+        ... on MediaImage {
+          image {
+            url
+          }
+        }
+      }
+    }
     options {
       name
       optionValues {
