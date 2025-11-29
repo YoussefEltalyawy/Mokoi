@@ -184,6 +184,12 @@ const BEST_SELLERS_QUERY = `#graphql
             currencyCode
           }
         }
+        compareAtPriceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
       }
     }
   }
@@ -203,6 +209,12 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     title
     handle
     priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    compareAtPriceRange {
       minVariantPrice {
         amount
         currencyCode
@@ -233,6 +245,12 @@ const NEW_ARRIVALS_QUERY = `#graphql
     handle
     createdAt
     priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    compareAtPriceRange {
       minVariantPrice {
         amount
         currencyCode

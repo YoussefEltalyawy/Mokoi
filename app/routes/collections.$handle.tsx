@@ -1,21 +1,21 @@
-import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
-import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {ProductItem} from '~/components/ProductItem';
-import {TextScramble} from '~/components/ui/text-scramble';
-import {useState, useEffect, useRef} from 'react';
-import {motion} from 'framer-motion';
+import { redirect, type LoaderFunctionArgs } from '@shopify/remix-oxygen';
+import { useLoaderData, type MetaFunction } from '@remix-run/react';
+import { getPaginationVariables, Analytics } from '@shopify/hydrogen';
+import { PaginatedResourceSection } from '~/components/PaginatedResourceSection';
+import { redirectIfHandleIsLocalized } from '~/lib/redirect';
+import { ProductItem } from '~/components/ProductItem';
+import { TextScramble } from '~/components/ui/text-scramble';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `MOKOI | ${data?.collection.title ?? ''} Collection`}];
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [{ title: `MOKOI | ${data?.collection.title ?? ''} Collection` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-  return {...deferredData, ...criticalData};
+  return { ...deferredData, ...criticalData };
 }
 
 async function loadCriticalData({
@@ -23,8 +23,8 @@ async function loadCriticalData({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const {handle} = params;
-  const {storefront} = context;
+  const { handle } = params;
+  const { storefront } = context;
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 8,
   });
@@ -33,9 +33,9 @@ async function loadCriticalData({
     throw redirect('/collections');
   }
 
-  const [{collection}] = await Promise.all([
+  const [{ collection }] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
+      variables: { handle, ...paginationVariables },
     }),
   ]);
 
@@ -45,19 +45,19 @@ async function loadCriticalData({
     });
   }
 
-  redirectIfHandleIsLocalized(request, {handle, data: collection});
+  redirectIfHandleIsLocalized(request, { handle, data: collection });
 
   return {
     collection,
   };
 }
 
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({ context }: LoaderFunctionArgs) {
   return {};
 }
 
 export default function Collection() {
-  const {collection} = useLoaderData<typeof loader>();
+  const { collection } = useLoaderData<typeof loader>();
   const [triggerScramble, setTriggerScramble] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -69,7 +69,7 @@ export default function Collection() {
           observer.disconnect();
         }
       },
-      {threshold: 0.1},
+      { threshold: 0.1 },
     );
 
     if (titleRef.current) {
@@ -82,9 +82,9 @@ export default function Collection() {
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <motion.div
-        initial={{opacity: 0, y: 20}}
-        animate={{opacity: 1, y: 0}}
-        transition={{duration: 0.6}}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
         className="mb-12 text-center"
       >
         <h1
@@ -108,11 +108,11 @@ export default function Collection() {
           connection={collection.products}
           resourcesClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16"
         >
-          {({node: product, index}) => (
+          {({ node: product, index }) => (
             <motion.div
-              initial={{opacity: 0, y: 20}}
-              animate={{opacity: 1, y: 0}}
-              transition={{duration: 0.4, delay: index * 0.1}}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
               key={product.id}
             >
               <ProductItem
@@ -153,6 +153,14 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       height
     }
     priceRange {
+      minVariantPrice {
+        ...MoneyProductItem
+      }
+      maxVariantPrice {
+        ...MoneyProductItem
+      }
+    }
+    compareAtPriceRange {
       minVariantPrice {
         ...MoneyProductItem
       }

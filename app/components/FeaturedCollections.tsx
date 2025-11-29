@@ -2,6 +2,7 @@
 
 import { Link } from '@remix-run/react';
 import { Image, Money } from '@shopify/hydrogen';
+import { ProductPrice } from '~/components/ProductPrice';
 import { useState, useRef, useEffect } from 'react';
 import type { CurrencyCode } from '@shopify/hydrogen/storefront-api-types';
 import { TextScramble } from '~/components/ui/text-scramble';
@@ -18,6 +19,12 @@ type Product = {
     height?: number;
   };
   priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: CurrencyCode;
+    };
+  };
+  compareAtPriceRange?: {
     minVariantPrice: {
       amount: string;
       currencyCode: CurrencyCode;
@@ -163,12 +170,9 @@ export function FeaturedCollections({
                         {p.title}
                       </h3>
                       <div className="text-sm mt-1 text-black font-medium">
-                        <Money
-                          data={{
-                            amount: p.priceRange.minVariantPrice.amount,
-                            currencyCode:
-                              p.priceRange.minVariantPrice.currencyCode,
-                          }}
+                        <ProductPrice
+                          price={p.priceRange.minVariantPrice}
+                          compareAtPrice={p.compareAtPriceRange?.minVariantPrice}
                         />
                       </div>
                     </div>

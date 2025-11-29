@@ -1,42 +1,42 @@
-import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
-import {getPaginationVariables} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {ProductItem} from '~/components/ProductItem';
-import {TextScramble} from '~/components/ui/text-scramble';
-import {useState, useEffect, useRef} from 'react';
-import {motion} from 'framer-motion';
+import { type LoaderFunctionArgs } from '@shopify/remix-oxygen';
+import { useLoaderData, type MetaFunction } from '@remix-run/react';
+import { getPaginationVariables } from '@shopify/hydrogen';
+import { PaginatedResourceSection } from '~/components/PaginatedResourceSection';
+import { ProductItem } from '~/components/ProductItem';
+import { TextScramble } from '~/components/ui/text-scramble';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 export const meta: MetaFunction<typeof loader> = () => {
-  return [{title: `MOKOI | Products`}];
+  return [{ title: `MOKOI | Products` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-  return {...deferredData, ...criticalData};
+  return { ...deferredData, ...criticalData };
 }
 
-async function loadCriticalData({context, request}: LoaderFunctionArgs) {
-  const {storefront} = context;
+async function loadCriticalData({ context, request }: LoaderFunctionArgs) {
+  const { storefront } = context;
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 8,
   });
 
-  const [{products}] = await Promise.all([
+  const [{ products }] = await Promise.all([
     storefront.query(CATALOG_QUERY, {
-      variables: {...paginationVariables},
+      variables: { ...paginationVariables },
     }),
   ]);
-  return {products};
+  return { products };
 }
 
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({ context }: LoaderFunctionArgs) {
   return {};
 }
 
 export default function Collection() {
-  const {products} = useLoaderData<typeof loader>();
+  const { products } = useLoaderData<typeof loader>();
   const [triggerScramble, setTriggerScramble] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -48,7 +48,7 @@ export default function Collection() {
           observer.disconnect();
         }
       },
-      {threshold: 0.1},
+      { threshold: 0.1 },
     );
 
     if (titleRef.current) {
@@ -61,9 +61,9 @@ export default function Collection() {
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <motion.div
-        initial={{opacity: 0, y: 20}}
-        animate={{opacity: 1, y: 0}}
-        transition={{duration: 0.6}}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
         className="mb-12 text-center"
       >
         <h1
@@ -80,11 +80,11 @@ export default function Collection() {
           connection={products}
           resourcesClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16"
         >
-          {({node: product, index}) => (
+          {({ node: product, index }) => (
             <motion.div
-              initial={{opacity: 0, y: 20}}
-              animate={{opacity: 1, y: 0}}
-              transition={{duration: 0.4, delay: index * 0.1}}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
             >
               <ProductItem
                 key={product.id}
@@ -116,6 +116,14 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
       height
     }
     priceRange {
+      minVariantPrice {
+        ...MoneyCollectionItem
+      }
+      maxVariantPrice {
+        ...MoneyCollectionItem
+      }
+    }
+    compareAtPriceRange {
       minVariantPrice {
         ...MoneyCollectionItem
       }
