@@ -71,7 +71,7 @@ export function links() {
 }
 
 const HOME_METAOBJECT_QUERY = `#graphql
-  query HomeMetaobject($handle: String!, $country: CountryCode, $language: LanguageCode)
+  query RootHomeMetaobject($handle: String!, $country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     metaobject(handle: {type: "home_page", handle: $handle}) {
       id
@@ -108,6 +108,7 @@ export async function loader(args: LoaderFunctionArgs) {
     ...deferredData,
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+    publicCheckoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
     announcmentText,
     shop: getShopAnalytics({
       storefront,

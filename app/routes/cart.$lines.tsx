@@ -58,7 +58,20 @@ export async function loader({request, context, params}: LoaderFunctionArgs) {
 
   // redirect to checkout
   if (cartResult.checkoutUrl) {
-    return redirect(cartResult.checkoutUrl, {headers});
+    let checkoutUrl = cartResult.checkoutUrl;
+    const checkoutDomain = context.env.PUBLIC_CHECKOUT_DOMAIN;
+    if (checkoutDomain) {
+      try {
+        const url = new URL(checkoutUrl);
+        url.hostname = checkoutDomain;
+        url.protocol = 'https:';
+        url.port = '';
+        checkoutUrl = url.toString();
+      } catch (e) {
+        console.error('Failed to parse checkout URL in cart.$lines loader:', e);
+      }
+    }
+    return redirect(checkoutUrl, {headers});
   } else {
     throw new Error('No checkout URL found');
   }

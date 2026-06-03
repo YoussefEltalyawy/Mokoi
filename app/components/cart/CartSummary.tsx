@@ -7,9 +7,10 @@ import {
   useAnalytics,
 } from '@shopify/hydrogen';
 import {useRef} from 'react';
-import {Link, type FetcherWithComponents} from '@remix-run/react';
+import {Link, useRouteLoaderData, type FetcherWithComponents} from '@remix-run/react';
 import {ArrowRight, X} from 'lucide-react';
 import {useAside} from '../Aside';
+import type {RootLoader} from '~/root';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -19,6 +20,21 @@ type CartSummaryProps = {
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const {close} = useAside();
   const isPage = layout === 'page';
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  const checkoutDomain = rootData?.publicCheckoutDomain;
+
+  let checkoutUrl = cart.checkoutUrl;
+  if (checkoutUrl && checkoutDomain) {
+    try {
+      const url = new URL(checkoutUrl);
+      url.hostname = checkoutDomain;
+      url.protocol = 'https:';
+      url.port = '';
+      checkoutUrl = url.toString();
+    } catch (e) {
+      console.error('Failed to parse checkout URL:', e);
+    }
+  }
 
   return (
     <div className="px-4 py-4">
@@ -41,7 +57,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         </p>
 
         {/* Checkout Button */}
-        <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
+        <CartCheckoutActions checkoutUrl={checkoutUrl} />
 
         {/* Continue Shopping */}
         <Link
