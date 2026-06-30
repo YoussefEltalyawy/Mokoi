@@ -23,6 +23,17 @@ export default async function handleRequest(
       'https://*.myshopify.com',
       'https://mokoieg.myshopify.com',
     ],
+    scriptSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://connect.facebook.net',
+    ],
+    connectSrc: [
+      "'self'",
+      'https://connect.facebook.net',
+      'https://www.facebook.com',
+    ],
+    imgSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://www.facebook.com'],
   });
 
   const body = await renderToReadableStream(
