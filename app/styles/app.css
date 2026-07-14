@@ -566,7 +566,6 @@ button.reset:hover:not(:has(> *)) {
   width: 100%;
   background: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  will-change: height;
 }
 
 .sale-countdown-inner {
@@ -692,6 +691,76 @@ button.reset:hover:not(:has(> *)) {
   text-transform: uppercase;
   color: #999;
   margin: 0;
+}
+
+/* Responsive adjustments for mobile screens */
+@media (max-width: 767px) {
+  .sale-countdown-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 8px 16px;
+    gap: 6px;
+  }
+
+  .sale-divider {
+    display: none;
+  }
+
+  .sale-copy {
+    gap: 8px;
+  }
+
+  .sale-tag {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+
+  .sale-copy-text {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  .sale-timer-wrap {
+    gap: 8px;
+  }
+
+  .sale-ends-label {
+    font-size: 9px;
+    letter-spacing: 0.05em;
+  }
+
+  .sale-timer {
+    gap: 2px;
+  }
+
+  .sale-time-block {
+    min-width: 28px;
+  }
+
+  .sale-time-digits {
+    font-size: 15px;
+  }
+
+  .sale-time-label {
+    font-size: 7px;
+    margin-top: 0px;
+  }
+
+  .sale-sep {
+    font-size: 13px;
+    padding-bottom: 6px;
+    margin-top: 1px;
+  }
+}
+
+.main-content-padding {
+  padding-top: 156px;
+}
+
+@media (max-width: 767px) {
+  .main-content-padding {
+    padding-top: 168px;
+  }
 }
 
 /*

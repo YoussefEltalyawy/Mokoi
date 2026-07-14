@@ -58,7 +58,7 @@ export function PageLayout({
             announcmentText={announcmentText ?? undefined}
           />
         )}
-        <main className={`flex-grow ${!isHomePage ? 'pt-16' : ''}`}>
+        <main className={`flex-grow ${!isHomePage ? 'main-content-padding' : ''}`}>
           {children}
         </main>
         <Footer />

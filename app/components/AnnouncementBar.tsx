@@ -49,11 +49,7 @@ export function SaleCountdownBar({ hasScrolled }: { hasScrolled: boolean }) {
     timeLeft.seconds === 0;
 
   return (
-    <div
-      className={`sale-countdown-bar transition-all duration-500 ease-in-out overflow-hidden ${
-        hasScrolled ? 'h-0' : 'h-[52px]'
-      }`}
-    >
+    <div className="sale-countdown-bar overflow-hidden">
       <div className="sale-countdown-inner">
         {/* Left: sale copy */}
         <div className="sale-copy">
