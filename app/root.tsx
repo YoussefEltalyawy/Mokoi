@@ -20,6 +20,8 @@ import marqueeStyles from '~/styles/marquee.css?url';
 import accountStyles from '~/styles/account.css?url';
 import { PageLayout } from './components/PageLayout';
 import ProjectStatusChecker from './components/ProjectAdminStatus';
+import { FacebookPixel } from './components/analytics/FacebookPixel';
+import { FacebookEvents } from './components/analytics/FacebookEvents';
 import type { LinksFunction } from '@remix-run/node';
 
 export type RootLoader = typeof loader;
@@ -89,6 +91,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const criticalData = await loadCriticalData(args);
 
   const { storefront, env } = args.context;
+  const publicFacebookPixelId = env.PUBLIC_FACEBOOK_PIXEL_ID || env.FB_PIXEL_ID || '';
 
   // Fetch homepage metaobject for global header announcement text
   const homeMeta = await args.context.storefront
@@ -109,6 +112,7 @@ export async function loader(args: LoaderFunctionArgs) {
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     publicCheckoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+    publicFacebookPixelId,
     announcmentText,
     shop: getShopAnalytics({
       storefront,
@@ -198,6 +202,8 @@ export function Layout({ children }: { children?: React.ReactNode }) {
             shop={data.shop}
             consent={data.consent}
           >
+            <FacebookPixel pixelId={data.publicFacebookPixelId} />
+            <FacebookEvents pixelId={data.publicFacebookPixelId} />
             <PageLayout {...data}>{children}</PageLayout>
           </Analytics.Provider>
         ) : (

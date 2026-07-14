@@ -20,6 +20,17 @@ declare global {
 
   interface Env extends HydrogenEnv {
     // declare additional Env parameter use in the fetch handler and Remix loader context here
+
+    /** Public Meta Pixel ID, safe to expose to the browser. */
+    PUBLIC_FACEBOOK_PIXEL_ID?: string;
+    /** Legacy local env fallback used by this project. */
+    FB_PIXEL_ID?: string;
+    /** Server-only Conversions API access token. Never expose to the client. */
+    FACEBOOK_CAPI_ACCESS_TOKEN: string;
+    /** Optional: Meta Events Manager "Test Events" code, for verifying delivery while testing. */
+    FACEBOOK_TEST_EVENT_CODE?: string;
+    /** Secret used to verify the `orders/paid` webhook HMAC signature for server-side Purchase events. */
+    SHOPIFY_WEBHOOK_SECRET?: string;
   }
 }
 

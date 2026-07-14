@@ -1,0 +1,721 @@
+diff --git a/app/entry.server.tsx b/app/entry.server.tsx
+index 40bbdd5..8e7672c 100644
+--- a/app/entry.server.tsx
++++ b/app/entry.server.tsx
+@@ -23,6 +23,17 @@ export default async function handleRequest(
+       'https://*.myshopify.com',
+       'https://mokoieg.myshopify.com',
+     ],
++    scriptSrc: [
++      "'self'",
++      'https://cdn.shopify.com',
++      'https://connect.facebook.net',
++    ],
++    connectSrc: [
++      "'self'",
++      'https://connect.facebook.net',
++      'https://www.facebook.com',
++    ],
++    imgSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://www.facebook.com'],
+   });
+ 
+   const body = await renderToReadableStream(
+diff --git a/app/root.tsx b/app/root.tsx
+index d901726..28d966d 100644
+--- a/app/root.tsx
++++ b/app/root.tsx
+@@ -20,6 +20,8 @@ import marqueeStyles from '~/styles/marquee.css?url';
+ import accountStyles from '~/styles/account.css?url';
+ import { PageLayout } from './components/PageLayout';
+ import ProjectStatusChecker from './components/ProjectAdminStatus';
++import { FacebookPixel } from './components/analytics/FacebookPixel';
++import { FacebookEvents } from './components/analytics/FacebookEvents';
+ import type { LinksFunction } from '@remix-run/node';
+ 
+ export type RootLoader = typeof loader;
+@@ -109,6 +111,7 @@ export async function loader(args: LoaderFunctionArgs) {
+     ...criticalData,
+     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+     publicCheckoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
++    publicFacebookPixelId: env.PUBLIC_FACEBOOK_PIXEL_ID,
+     announcmentText,
+     shop: getShopAnalytics({
+       storefront,
+@@ -198,6 +201,8 @@ export function Layout({ children }: { children?: React.ReactNode }) {
+             shop={data.shop}
+             consent={data.consent}
+           >
++            <FacebookPixel pixelId={data.publicFacebookPixelId} />
++            <FacebookEvents pixelId={data.publicFacebookPixelId} />
+             <PageLayout {...data}>{children}</PageLayout>
+           </Analytics.Provider>
+         ) : (
+diff --git a/env.d.ts b/env.d.ts
+index c9538bf..8610684 100644
+--- a/env.d.ts
++++ b/env.d.ts
+@@ -20,6 +20,15 @@ declare global {
+ 
+   interface Env extends HydrogenEnv {
+     // declare additional Env parameter use in the fetch handler and Remix loader context here
++
++    /** Public Meta Pixel ID, safe to expose to the browser. */
++    PUBLIC_FACEBOOK_PIXEL_ID: string;
++    /** Server-only Conversions API access token. Never expose to the client. */
++    FACEBOOK_CAPI_ACCESS_TOKEN: string;
++    /** Optional: Meta Events Manager "Test Events" code, for verifying delivery while testing. */
++    FACEBOOK_TEST_EVENT_CODE?: string;
++    /** Secret used to verify the `orders/paid` webhook HMAC signature for server-side Purchase events. */
++    SHOPIFY_WEBHOOK_SECRET?: string;
+   }
+ }
+ 
+diff --git a/app/components/analytics/FacebookEvents.tsx b/app/components/analytics/FacebookEvents.tsx
+new file mode 100644
+index 0000000..e8b5476
+--- /dev/null
++++ b/app/components/analytics/FacebookEvents.tsx
+@@ -0,0 +1,101 @@
++import {useEffect, useRef} from 'react';
++import {useAnalytics} from '@shopify/hydrogen';
++import {trackFacebookEvent} from '~/lib/facebook/client';
++
++/**
++ * Bridges Hydrogen's built-in Analytics.subscribe events to Meta
++ * ViewContent / Search / AddToCart / InitiateCheckout events.
++ * Mount once, inside <Analytics.Provider> (e.g. in root.tsx's <Layout>),
++ * alongside <FacebookPixel />.
++ *
++ * Note: Hydrogen's `subscribe()` has no unsubscribe mechanism, so this
++ * only subscribes once (guarded by a ref), matching Hydrogen's own
++ * internal usage pattern.
++ */
++export function FacebookEvents({pixelId}: {pixelId?: string}) {
++  const {subscribe, canTrack, shop} = useAnalytics();
++  const hasSubscribed = useRef(false);
++  const canTrackRef = useRef(canTrack);
++  canTrackRef.current = canTrack;
++  const currencyRef = useRef(shop?.currency);
++  currencyRef.current = shop?.currency;
++
++  useEffect(() => {
++    if (!pixelId || hasSubscribed.current) return;
++    hasSubscribed.current = true;
++
++    subscribe('product_viewed', (payload) => {
++      if (!canTrackRef.current()) return;
++      const products = payload.products ?? [];
++      const value = products.reduce(
++        (sum, p) => sum + Number(p.price || 0) * (p.quantity || 1),
++        0,
++      );
++      trackFacebookEvent('ViewContent', {
++        customData: {
++          currency: currencyRef.current,
++          value,
++          content_ids: products.map((p) => p.id),
++          content_type: 'product',
++          contents: products.map((p) => ({
++            id: p.id,
++            quantity: p.quantity || 1,
++            item_price: Number(p.price || 0),
++          })),
++        },
++      });
++    });
++
++    subscribe('search_viewed', (payload) => {
++      if (!canTrackRef.current()) return;
++      trackFacebookEvent('Search', {
++        customData: {
++          search_string: payload.searchTerm,
++        },
++      });
++    });
++
++    subscribe('product_added_to_cart', (payload) => {
++      if (!canTrackRef.current()) return;
++      const line = payload.currentLine;
++      if (!line) return;
++      const price = Number(line.cost?.totalAmount?.amount || 0);
++      const productId =
++        (line.merchandise as {product?: {id?: string}})?.product?.id ||
++        line.merchandise?.id;
++      trackFacebookEvent('AddToCart', {
++        customData: {
++          currency: line.cost?.totalAmount?.currencyCode || currencyRef.current,
++          value: price,
++          content_ids: productId ? [productId] : [],
++          content_type: 'product',
++          contents: productId
++            ? [{id: productId, quantity: line.quantity || 1, item_price: price}]
++            : [],
++        },
++      });
++    });
++
++    // Custom event published from CartSummary.tsx when the shopper clicks
++    // "Checkout" (checkout itself happens off-app on Shopify's domain).
++    subscribe('custom_checkout_started', (payload) => {
++      if (!canTrackRef.current()) return;
++      const cart = (payload as {cart?: any}).cart;
++      const lines = cart?.lines?.nodes ?? [];
++      const contentIds = lines
++        .map((l: any) => l.merchandise?.product?.id || l.merchandise?.id || null)
++        .filter(Boolean);
++      trackFacebookEvent('InitiateCheckout', {
++        customData: {
++          currency: cart?.cost?.totalAmount?.currencyCode || currencyRef.current,
++          value: Number(cart?.cost?.totalAmount?.amount || 0),
++          num_items: lines.length,
++          content_ids: contentIds,
++          content_type: 'product',
++        },
++      });
++    });
++  }, [pixelId, subscribe]);
++
++  return null;
++}
+diff --git a/app/components/analytics/FacebookPixel.tsx b/app/components/analytics/FacebookPixel.tsx
+new file mode 100644
+index 0000000..9e5d957
+--- /dev/null
++++ b/app/components/analytics/FacebookPixel.tsx
+@@ -0,0 +1,56 @@
++import {useEffect, useRef} from 'react';
++import {useAnalytics} from '@shopify/hydrogen';
++import {trackFacebookEvent} from '~/lib/facebook/client';
++
++/**
++ * Injects the Meta Pixel base script and fires PageView on the initial
++ * load and every client-side navigation. Mount once, inside
++ * <Analytics.Provider>, e.g. in root.tsx's <Layout>.
++ */
++export function FacebookPixel({pixelId}: {pixelId?: string}) {
++  const {subscribe, canTrack} = useAnalytics();
++  const hasSubscribed = useRef(false);
++  const canTrackRef = useRef(canTrack);
++  canTrackRef.current = canTrack;
++
++  useEffect(() => {
++    if (!pixelId || hasSubscribed.current) return;
++    hasSubscribed.current = true;
++
++    subscribe('page_viewed', () => {
++      if (!canTrackRef.current()) return;
++      trackFacebookEvent('PageView');
++    });
++  }, [pixelId, subscribe]);
++
++  if (!pixelId) return null;
++
++  return (
++    <>
++      <script
++        dangerouslySetInnerHTML={{
++          __html: `
++            !function(f,b,e,v,n,t,s)
++            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
++            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
++            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
++            n.queue=[];t=b.createElement(e);t.async=!0;
++            t.src=v;s=b.getElementsByTagName(e)[0];
++            s.parentNode.insertBefore(t,s)}(window, document,'script',
++            'https://connect.facebook.net/en_US/fbevents.js');
++            fbq('init', '${pixelId}');
++          `,
++        }}
++      />
++      <noscript>
++        <img
++          height="1"
++          width="1"
++          style={{display: 'none'}}
++          src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
++          alt=""
++        />
++      </noscript>
++    </>
++  );
++}
+diff --git a/app/lib/facebook/capi.server.ts b/app/lib/facebook/capi.server.ts
+new file mode 100644
+index 0000000..c161ee7
+--- /dev/null
++++ b/app/lib/facebook/capi.server.ts
+@@ -0,0 +1,117 @@
++// Server-only. Never import this from a client component — it uses the
++// Conversions API access token, which must stay on the server.
++import type {
++  FacebookCustomData,
++  FacebookStandardEvent,
++  FacebookUserData,
++} from '~/lib/facebook/types';
++
++const GRAPH_API_VERSION = 'v23.0';
++
++async function sha256Hex(value: string): Promise<string> {
++  const normalized = value.trim().toLowerCase();
++  const data = new TextEncoder().encode(normalized);
++  // Web Crypto is available in the Oxygen worker runtime.
++  const digest = await crypto.subtle.digest('SHA-256', data);
++  return Array.from(new Uint8Array(digest))
++    .map((b) => b.toString(16).padStart(2, '0'))
++    .join('');
++}
++
++async function buildHashedUserData(userData?: FacebookUserData) {
++  if (!userData) return {};
++
++  const [em, ph, fn, ln, ct, st, zp, country, externalId] = await Promise.all(
++    [
++      userData.email ? sha256Hex(userData.email) : undefined,
++      userData.phone ? sha256Hex(userData.phone.replace(/[^\d]/g, '')) : undefined,
++      userData.firstName ? sha256Hex(userData.firstName) : undefined,
++      userData.lastName ? sha256Hex(userData.lastName) : undefined,
++      userData.city ? sha256Hex(userData.city.replace(/\s/g, '')) : undefined,
++      userData.state ? sha256Hex(userData.state.replace(/\s/g, '')) : undefined,
++      userData.zip ? sha256Hex(userData.zip.replace(/\s/g, '')) : undefined,
++      userData.country ? sha256Hex(userData.country) : undefined,
++      userData.externalId ? sha256Hex(userData.externalId) : undefined,
++    ],
++  );
++
++  return {
++    ...(em && {em: [em]}),
++    ...(ph && {ph: [ph]}),
++    ...(fn && {fn: [fn]}),
++    ...(ln && {ln: [ln]}),
++    ...(ct && {ct: [ct]}),
++    ...(st && {st: [st]}),
++    ...(zp && {zp: [zp]}),
++    ...(country && {country: [country]}),
++    ...(externalId && {external_id: [externalId]}),
++    // These three are sent unhashed per Meta's spec.
++    ...(userData.fbp && {fbp: userData.fbp}),
++    ...(userData.fbc && {fbc: userData.fbc}),
++    ...(userData.clientIpAddress && {
++      client_ip_address: userData.clientIpAddress,
++    }),
++    ...(userData.clientUserAgent && {
++      client_user_agent: userData.clientUserAgent,
++    }),
++  };
++}
++
++export type SendFacebookCapiEventArgs = {
++  pixelId: string;
++  accessToken: string;
++  eventName: FacebookStandardEvent;
++  eventId: string;
++  eventSourceUrl: string;
++  actionSource?: 'website' | 'system_generated';
++  userData?: FacebookUserData;
++  customData?: FacebookCustomData;
++  testEventCode?: string;
++};
++
++export async function sendFacebookCapiEvent({
++  pixelId,
++  accessToken,
++  eventName,
++  eventId,
++  eventSourceUrl,
++  actionSource = 'website',
++  userData,
++  customData,
++  testEventCode,
++}: SendFacebookCapiEventArgs) {
++  const hashedUserData = await buildHashedUserData(userData);
++
++  const body = {
++    data: [
++      {
++        event_name: eventName,
++        event_time: Math.floor(Date.now() / 1000),
++        event_id: eventId,
++        event_source_url: eventSourceUrl,
++        action_source: actionSource,
++        user_data: hashedUserData,
++        ...(customData && {custom_data: customData}),
++      },
++    ],
++    ...(testEventCode && {test_event_code: testEventCode}),
++  };
++
++  const endpoint = `https://graph.facebook.com/${GRAPH_API_VERSION}/${pixelId}/events?access_token=${accessToken}`;
++
++  const response = await fetch(endpoint, {
++    method: 'POST',
++    headers: {'Content-Type': 'application/json'},
++    body: JSON.stringify(body),
++  });
++
++  if (!response.ok) {
++    const errorText = await response.text().catch(() => '');
++    console.error(
++      `[facebook-capi] ${eventName} failed (${response.status}): ${errorText}`,
++    );
++    return {ok: false as const, status: response.status};
++  }
++
++  return {ok: true as const, status: response.status};
++}
+diff --git a/app/lib/facebook/client.ts b/app/lib/facebook/client.ts
+new file mode 100644
+index 0000000..19bef01
+--- /dev/null
++++ b/app/lib/facebook/client.ts
+@@ -0,0 +1,60 @@
++import type {
++  FacebookCustomData,
++  FacebookStandardEvent,
++  FacebookUserData,
++} from '~/lib/facebook/types';
++
++declare global {
++  interface Window {
++    fbq?: (...args: unknown[]) => void;
++  }
++}
++
++function generateEventId(): string {
++  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
++    return crypto.randomUUID();
++  }
++  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
++}
++
++/**
++ * Fires a Meta Pixel browser event and the matching Conversions API event
++ * with the same `event_id`, so Meta dedupes them into a single event.
++ * Safe to call even if the pixel hasn't loaded or tracking is disabled
++ * (the caller is expected to check `canTrack()` first).
++ */
++export function trackFacebookEvent(
++  eventName: FacebookStandardEvent,
++  options?: {
++    customData?: FacebookCustomData;
++    userData?: FacebookUserData;
++  },
++) {
++  if (typeof window === 'undefined') return;
++
++  const eventId = generateEventId();
++  const eventSourceUrl = window.location.href;
++
++  if (typeof window.fbq === 'function') {
++    window.fbq('track', eventName, options?.customData ?? {}, {
++      eventID: eventId,
++    });
++  }
++
++  // keepalive ensures this still fires if the user is mid-navigation
++  // (e.g. clicking through to Shopify checkout for InitiateCheckout).
++  fetch('/api/fb-events', {
++    method: 'POST',
++    headers: {'Content-Type': 'application/json'},
++    keepalive: true,
++    body: JSON.stringify({
++      eventName,
++      eventId,
++      eventSourceUrl,
++      userData: options?.userData,
++      customData: options?.customData,
++    }),
++  }).catch(() => {
++    // Analytics relay failures should never surface to the shopper.
++  });
++}
+diff --git a/app/lib/facebook/types.ts b/app/lib/facebook/types.ts
+new file mode 100644
+index 0000000..156b7db
+--- /dev/null
++++ b/app/lib/facebook/types.ts
+@@ -0,0 +1,54 @@
++// Shared types for Meta Pixel + Conversions API integration.
++
++export type FacebookStandardEvent =
++  | 'PageView'
++  | 'ViewContent'
++  | 'Search'
++  | 'AddToCart'
++  | 'InitiateCheckout'
++  | 'Purchase';
++
++export type FacebookContentItem = {
++  id: string;
++  quantity: number;
++  item_price?: number;
++};
++
++/** Raw (unhashed) user data we may have available on client or server.
++ *  Hashing happens server-side in capi.server.ts before it ever leaves
++ *  for Meta — never send raw PII to Meta directly. */
++export type FacebookUserData = {
++  email?: string | null;
++  phone?: string | null;
++  firstName?: string | null;
++  lastName?: string | null;
++  city?: string | null;
++  state?: string | null;
++  zip?: string | null;
++  country?: string | null;
++  externalId?: string | null;
++  fbp?: string | null;
++  fbc?: string | null;
++  clientIpAddress?: string | null;
++  clientUserAgent?: string | null;
++};
++
++export type FacebookCustomData = {
++  currency?: string;
++  value?: number;
++  content_ids?: string[];
++  content_type?: 'product' | 'product_group';
++  contents?: FacebookContentItem[];
++  num_items?: number;
++  search_string?: string;
++  order_id?: string;
++};
++
++/** Body shape posted from the browser to our /api/fb-events relay route. */
++export type FacebookEventRelayPayload = {
++  eventName: FacebookStandardEvent;
++  eventId: string;
++  eventSourceUrl: string;
++  userData?: FacebookUserData;
++  customData?: FacebookCustomData;
++};
+diff --git a/app/routes/api.fb-events.tsx b/app/routes/api.fb-events.tsx
+new file mode 100644
+index 0000000..44505b2
+--- /dev/null
++++ b/app/routes/api.fb-events.tsx
+@@ -0,0 +1,67 @@
++import type {ActionFunctionArgs} from '@shopify/remix-oxygen';
++import {data} from '@shopify/remix-oxygen';
++import {sendFacebookCapiEvent} from '~/lib/facebook/capi.server';
++import type {FacebookEventRelayPayload} from '~/lib/facebook/types';
++
++function getCookie(request: Request, name: string): string | null {
++  const cookieHeader = request.headers.get('Cookie') || '';
++  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
++  return match ? decodeURIComponent(match[1]) : null;
++}
++
++function getClientIp(request: Request): string | null {
++  return (
++    request.headers.get('oxygen-buyer-ip') ||
++    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
++    request.headers.get('cf-connecting-ip') ||
++    null
++  );
++}
++
++export async function action({request, context}: ActionFunctionArgs) {
++  if (request.method !== 'POST') {
++    return data({error: 'Method not allowed'}, {status: 405});
++  }
++
++  const {env} = context;
++  const pixelId = env.PUBLIC_FACEBOOK_PIXEL_ID;
++  const accessToken = env.FACEBOOK_CAPI_ACCESS_TOKEN;
++
++  // Fail quietly — analytics should never break the storefront.
++  if (!pixelId || !accessToken) {
++    return data({skipped: true}, {status: 200});
++  }
++
++  let payload: FacebookEventRelayPayload;
++  try {
++    payload = (await request.json()) as FacebookEventRelayPayload;
++  } catch {
++    return data({error: 'Invalid JSON'}, {status: 400});
++  }
++
++  if (!payload?.eventName || !payload?.eventId || !payload?.eventSourceUrl) {
++    return data({error: 'Missing required fields'}, {status: 400});
++  }
++
++  const fbp = getCookie(request, '_fbp');
++  const fbc = getCookie(request, '_fbc');
++
++  const result = await sendFacebookCapiEvent({
++    pixelId,
++    accessToken,
++    eventName: payload.eventName,
++    eventId: payload.eventId,
++    eventSourceUrl: payload.eventSourceUrl,
++    testEventCode: env.FACEBOOK_TEST_EVENT_CODE || undefined,
++    userData: {
++      ...payload.userData,
++      fbp: payload.userData?.fbp ?? fbp,
++      fbc: payload.userData?.fbc ?? fbc,
++      clientIpAddress: getClientIp(request),
++      clientUserAgent: request.headers.get('user-agent'),
++    },
++    customData: payload.customData,
++  });
++
++  return data(result, {status: result.ok ? 200 : 502});
++}
+diff --git a/app/routes/webhooks.orders-paid.tsx b/app/routes/webhooks.orders-paid.tsx
+new file mode 100644
+index 0000000..d098edf
+--- /dev/null
++++ b/app/routes/webhooks.orders-paid.tsx
+@@ -0,0 +1,152 @@
++import type {ActionFunctionArgs} from '@shopify/remix-oxygen';
++import {data} from '@shopify/remix-oxygen';
++import {sendFacebookCapiEvent} from '~/lib/facebook/capi.server';
++
++/**
++ * Shopify Admin > Settings > Notifications > Webhooks, or via the
++ * Admin GraphQL `webhookSubscriptionCreate` mutation:
++ *   topic: ORDERS_PAID
++ *   url:   https://<your-domain>/webhooks/orders-paid
++ *   format: JSON
++ *
++ * The signing secret shown when you create the webhook goes in
++ * SHOPIFY_WEBHOOK_SECRET. Checkout happens on Shopify's checkout domain,
++ * outside this Hydrogen app, so this webhook is the only reliable place
++ * to fire a server-side Purchase event.
++ */
++
++async function verifyShopifyHmac(
++  rawBody: string,
++  hmacHeader: string | null,
++  secret: string,
++): Promise<boolean> {
++  if (!hmacHeader) return false;
++
++  const key = await crypto.subtle.importKey(
++    'raw',
++    new TextEncoder().encode(secret),
++    {name: 'HMAC', hash: 'SHA-256'},
++    false,
++    ['sign'],
++  );
++  const signature = await crypto.subtle.sign(
++    'HMAC',
++    key,
++    new TextEncoder().encode(rawBody),
++  );
++  const computedBase64 = btoa(
++    String.fromCharCode(...new Uint8Array(signature)),
++  );
++
++  // Constant-time-ish comparison.
++  if (computedBase64.length !== hmacHeader.length) return false;
++  let mismatch = 0;
++  for (let i = 0; i < computedBase64.length; i++) {
++    mismatch |= computedBase64.charCodeAt(i) ^ hmacHeader.charCodeAt(i);
++  }
++  return mismatch === 0;
++}
++
++type ShopifyOrderLineItem = {
++  product_id?: number | string;
++  variant_id?: number | string;
++  quantity?: number;
++  price?: string;
++};
++
++type ShopifyOrderWebhookPayload = {
++  id: number | string;
++  email?: string;
++  currency?: string;
++  current_total_price?: string;
++  total_price?: string;
++  customer?: {
++    email?: string;
++    first_name?: string;
++    last_name?: string;
++    phone?: string;
++  };
++  billing_address?: {
++    phone?: string;
++    city?: string;
++    province_code?: string;
++    zip?: string;
++    country_code?: string;
++  };
++  line_items?: ShopifyOrderLineItem[];
++};
++
++export async function action({request, context}: ActionFunctionArgs) {
++  if (request.method !== 'POST') {
++    return data({error: 'Method not allowed'}, {status: 405});
++  }
++
++  const {env} = context;
++  const webhookSecret = env.SHOPIFY_WEBHOOK_SECRET;
++  const pixelId = env.PUBLIC_FACEBOOK_PIXEL_ID;
++  const accessToken = env.FACEBOOK_CAPI_ACCESS_TOKEN;
++
++  if (!webhookSecret || !pixelId || !accessToken) {
++    console.error(
++      '[webhooks.orders-paid] Missing SHOPIFY_WEBHOOK_SECRET, PUBLIC_FACEBOOK_PIXEL_ID, or FACEBOOK_CAPI_ACCESS_TOKEN',
++    );
++    return data({error: 'Not configured'}, {status: 500});
++  }
++
++  const rawBody = await request.text();
++  const hmacHeader = request.headers.get('X-Shopify-Hmac-Sha256');
++
++  const isValid = await verifyShopifyHmac(rawBody, hmacHeader, webhookSecret);
++  if (!isValid) {
++    return data({error: 'Invalid signature'}, {status: 401});
++  }
++
++  let order: ShopifyOrderWebhookPayload;
++  try {
++    order = JSON.parse(rawBody) as ShopifyOrderWebhookPayload;
++  } catch {
++    return data({error: 'Invalid JSON'}, {status: 400});
++  }
++
++  const lineItems = order.line_items ?? [];
++  const value = Number(order.current_total_price ?? order.total_price ?? 0);
++  const currency = order.currency;
++  const email = order.email || order.customer?.email;
++  const phone = order.customer?.phone || order.billing_address?.phone;
++
++  const result = await sendFacebookCapiEvent({
++    pixelId,
++    accessToken,
++    eventName: 'Purchase',
++    eventId: `purchase_${order.id}`,
++    eventSourceUrl: `https://${context.env.PUBLIC_STORE_DOMAIN}`,
++    actionSource: 'website',
++    testEventCode: env.FACEBOOK_TEST_EVENT_CODE || undefined,
++    userData: {
++      email,
++      phone,
++      firstName: order.customer?.first_name,
++      lastName: order.customer?.last_name,
++      city: order.billing_address?.city,
++      state: order.billing_address?.province_code,
++      zip: order.billing_address?.zip,
++      country: order.billing_address?.country_code,
++      externalId: order.customer ? String(order.id) : undefined,
++    },
++    customData: {
++      currency,
++      value,
++      order_id: String(order.id),
++      num_items: lineItems.length,
++      content_type: 'product',
++      content_ids: lineItems.map((li) => String(li.product_id ?? li.variant_id)),
++      contents: lineItems.map((li) => ({
++        id: String(li.product_id ?? li.variant_id),
++        quantity: li.quantity ?? 1,
++        item_price: Number(li.price ?? 0),
++      })),
++    },
++  });
++
++  return data(result, {status: result.ok ? 200 : 502});
++}
