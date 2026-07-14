@@ -4,6 +4,7 @@ import { Image, useOptimisticCart } from '@shopify/hydrogen';
 import type { HeaderQuery, CartApiQueryFragment } from 'storefrontapi.generated';
 import { useAside } from '~/components/Aside';
 import { Menu } from 'lucide-react';
+import { SaleCountdownBar } from '~/components/AnnouncementBar';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -42,7 +43,7 @@ export function Header({
 
   return (
     <div className="fixed top-0 left-0 w-screen z-20">
-      {/* Announcement Bar */}
+      {/* Original Marquee Announcement Bar */}
       <div
         className={`w-full bg-black text-white transition-all duration-500 ease-in-out ${hasScrolled ? 'h-0 overflow-hidden' : 'h-10'}`}
       >
@@ -55,6 +56,9 @@ export function Header({
           </p>
         </div>
       </div>
+
+      {/* Sale Countdown Bar */}
+      <SaleCountdownBar hasScrolled={hasScrolled} />
 
       <header className="relative flex items-center justify-between bg-white text-black w-full transition-colors duration-300 h-16">
         {/* Left section - Hamburger and Text Logo */}

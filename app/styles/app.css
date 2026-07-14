@@ -556,3 +556,167 @@ button.reset:hover:not(:has(> *)) {
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+/*
+ * --------------------------------------------------
+ * components/SaleCountdownBar
+ * --------------------------------------------------
+ */
+.sale-countdown-bar {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  will-change: height;
+}
+
+.sale-countdown-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 52px;
+  padding: 0 24px;
+  white-space: nowrap;
+}
+
+/* Left pill: "SALE · Up to 30% off" */
+.sale-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sale-tag {
+  display: inline-flex;
+  align-items: center;
+  background: #111;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  line-height: 1;
+}
+
+.sale-copy-text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.sale-copy-text strong {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* Vertical divider */
+.sale-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+/* Timer wrapper */
+.sale-timer-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sale-ends-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+/* The actual timer row */
+.sale-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Individual time block */
+.sale-time-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 32px;
+}
+
+.sale-time-digits {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #111;
+  /* live flicker on every tick */
+  animation: sale-tick 1s step-end infinite;
+}
+
+@keyframes sale-tick {
+  0%   { opacity: 1; }
+  5%   { opacity: 0.6; }
+  10%  { opacity: 1; }
+}
+
+.sale-time-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #999;
+  margin-top: 1px;
+}
+
+.sale-sep {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ccc;
+  line-height: 1;
+  padding-bottom: 10px; /* align with digits */
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.sale-expired {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+  margin: 0;
+}
+
+/*
+ * --------------------------------------------------
+ * Discount badge (product card)
+ * --------------------------------------------------
+ */
+.discount-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  line-height: 1;
+  pointer-events: none;
+  animation: badge-in 0.3s ease both;
+}
+
+@keyframes badge-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}

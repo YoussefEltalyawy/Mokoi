@@ -112,7 +112,20 @@ export function FeaturedCollections({
             className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"
             onMouseLeave={() => setHoveredProduct(null)}
           >
-            {collection.products.nodes.map((p) => (
+            {collection.products.nodes.map((p) => {
+              // Calculate discount %
+              const price = p.priceRange?.minVariantPrice;
+              const compareAt = p.compareAtPriceRange?.minVariantPrice;
+              const discountPercent =
+                price && compareAt && parseFloat(compareAt.amount) > 0
+                  ? Math.round(
+                      ((parseFloat(compareAt.amount) - parseFloat(price.amount)) /
+                        parseFloat(compareAt.amount)) *
+                        100,
+                    )
+                  : null;
+
+              return (
               <motion.div
                 key={p.id}
                 layoutId={p.id}
@@ -137,6 +150,12 @@ export function FeaturedCollections({
                         className="w-full h-full object-cover"
                       />
                     </motion.div>
+
+                    {/* Discount badge */}
+                    {discountPercent && discountPercent > 0 && (
+                      <div className="discount-badge">-{discountPercent}%</div>
+                    )}
+
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 flex items-end justify-center pb-6"
                       initial={{ opacity: 0 }}
@@ -190,7 +209,8 @@ export function FeaturedCollections({
                   />
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </AnimatePresence>
       </div>

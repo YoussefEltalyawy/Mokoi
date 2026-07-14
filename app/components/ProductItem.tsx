@@ -25,6 +25,18 @@ export function ProductItem({
   const image = product.featuredImage;
   const [isHovered, setIsHovered] = useState(false);
 
+  // Calculate discount percentage if compareAtPrice is available
+  const price = product.priceRange?.minVariantPrice;
+  const compareAtPrice = (product as any).compareAtPriceRange?.minVariantPrice;
+  const discountPercent =
+    price && compareAtPrice && parseFloat(compareAtPrice.amount) > 0
+      ? Math.round(
+          ((parseFloat(compareAtPrice.amount) - parseFloat(price.amount)) /
+            parseFloat(compareAtPrice.amount)) *
+            100,
+        )
+      : null;
+
   return (
     <div
       className="block group relative"
@@ -49,6 +61,13 @@ export function ProductItem({
             />
           )}
         </motion.div>
+
+        {/* Discount badge */}
+        {discountPercent && discountPercent > 0 && (
+          <div className="discount-badge">
+            -{discountPercent}%
+          </div>
+        )}
         <motion.div
           className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 flex items-end justify-center pb-6"
           initial={{ opacity: 0 }}
